@@ -65,58 +65,85 @@ class _MyCartPageState extends State<MyCartPage> {
   List<String> productIds = [];
   List<String> count = [];
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   Future<List<dynamic>> getProductsWithRefProductIds() async {
+//    SharedPreferences prefs = await SharedPreferences.getInstance();
+//    cartProducts = prefs.getStringList("cartProducts");
+//    print(cartProducts);
+//    cartProducts.forEach((element) {
+//      var m = jsonDecode(element);
+//      var u = Cart.fromJson(m);
+//      productIds.add(u.productId);
+//    });
+//    print(productIds);
+//    cartProducts.forEach((element) {
+//      var m = jsonDecode(element);
+//      var u = Cart.fromJson(m);
+//      count.add(u.count);
+//    });
+//    print(count);
+//    http.Response response = await http.post(getProductsWithRefIdsUrl, body: {
+//      'products_ids': jsonEncode(productIds),
+//    });
+//    print(response.body);
+//    return jsonDecode(response.body);
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    cartProducts = prefs.getStringList("cartProducts");
-    print(cartProducts);
-    cartProducts.forEach((element) {
-      var m = jsonDecode(element);
-      var u = Cart.fromJson(m);
-      productIds.add(u.productId);
-    });
-    print(productIds);
-    cartProducts.forEach((element) {
-      var m = jsonDecode(element);
-      var u = Cart.fromJson(m);
-      count.add(u.count);
-    });
-    print(count);
-    http.Response response = await http.post(getProductsWithRefIdsUrl, body: {
-      'products_ids': jsonEncode(productIds),
-    });
+    String email = prefs.getString("email");
+
+    http.Response response = await http.post(
+      'https://betasources.in/projects/grin-armer/get-cart-products',
+      body: {
+        'username' : email,
+      }
+    );
+
     print(response.body);
     return jsonDecode(response.body);
   }
 
   sendProductsInfo() async {
+//    SharedPreferences prefs = await SharedPreferences.getInstance();
+//    String email = prefs.getString("email");
+//    cartProducts = prefs.getStringList("cartProducts");
+//    print('email');
+//    print(email);
+//    print(cartProducts);
+
+//    http.Response response = await http.post(
+//        'https://betasources.in/projects/grin-armer/cart-for-enquiry',
+//        body: {
+//          'username': email,
+//          'products_ids': jsonEncode(cartProducts),
+//        });
+//
+//    print(response.body);
+//    var responseBody = jsonDecode(response.body);
+//    if (responseBody['success'] == true) {
+//      showSuccessDialog(
+//          context, '            Order Placed.\nWe will contact you soon.');
+//      cartProducts = [];
+//      prefs.setStringList("cartProducts", cartProducts);
+//      setState(() {
+//        productIds = [];
+//        count = [];
+//      });
+//    } else {
+//      showErrConfirmDialog(context, responseBody['msg']);
+//    }
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String email = prefs.getString("email");
-    cartProducts = prefs.getStringList("cartProducts");
-    print('email');
-    print(email);
-    print(cartProducts);
 
     http.Response response = await http.post(
         'https://betasources.in/projects/grin-armer/cart-for-enquiry',
         body: {
-          'username': email,
-          'products_ids': jsonEncode(cartProducts),
-        });
+          'username' : email,
+        }
+    );
 
     print(response.body);
-    var responseBody = jsonDecode(response.body);
-    if (responseBody['success'] == true) {
-      showSuccessDialog(
-          context, '            Order Placed.\nWe will contact you soon.');
-      cartProducts = [];
-      prefs.setStringList("cartProducts", cartProducts);
-      setState(() {
-        productIds = [];
-        count = [];
-      });
-    } else {
-      showErrConfirmDialog(context, responseBody['msg']);
-    }
   }
 
   //checker
@@ -176,38 +203,79 @@ class _MyCartPageState extends State<MyCartPage> {
 
   //function to remove item from the cart
   removeProduct(productId) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List products = prefs.getStringList('cartProducts');
-    print(products);
+//    SharedPreferences prefs = await SharedPreferences.getInstance();
+//    List products = prefs.getStringList('cartProducts');
+//    print(products);
+//
+//    bool existsInCart = false;
+//    products.every((m) {
+//      m = jsonDecode(m);
+//      var u = Cart.fromJson(m);
+//      if (u.productId == productId) {
+//        existsInCart = true;
+//        print('exists');
+//        products.removeWhere(
+//            (item) => (Cart.fromJson(jsonDecode(item))).productId == productId);
+//        // print(products);
+//        prefs.setStringList('cartProducts', products);
+//      }
+//      if (existsInCart)
+//        return false;
+//      else
+//        return true;
+//    });
+//    Navigator.pop(context);
+//    setState(() {
+//      productIds = [];
+//      count = [];
+//    });
+//    if (existsInCart == false) {
+//      print('does not exists');
+//    }
+//
+//    List p = prefs.getStringList('cartProducts');
+//    print(p);
 
-    bool existsInCart = false;
-    products.every((m) {
-      m = jsonDecode(m);
-      var u = Cart.fromJson(m);
-      if (u.productId == productId) {
-        existsInCart = true;
-        print('exists');
-        products.removeWhere(
-            (item) => (Cart.fromJson(jsonDecode(item))).productId == productId);
-        // print(products);
-        prefs.setStringList('cartProducts', products);
-      }
-      if (existsInCart)
-        return false;
-      else
-        return true;
-    });
     Navigator.pop(context);
-    setState(() {
-      productIds = [];
-      count = [];
-    });
-    if (existsInCart == false) {
-      print('does not exists');
-    }
+//    showErrDialog(context, 'Loading..');
+    _scaffoldKey.currentState.showSnackBar(
+        SnackBar(
+          duration: Duration(seconds: 60),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Please Wait..'),
+              CircularProgressIndicator(backgroundColor: white, valueColor: AlwaysStoppedAnimation<Color>(appColor),),
+            ],
+          ),
+          behavior: SnackBarBehavior.floating,
+          elevation: 5.0,
+          backgroundColor: appColor,
+        )
+    );
 
-    List p = prefs.getStringList('cartProducts');
-    print(p);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String email = prefs.getString('email');
+
+    http.Response response = await http.post(
+        'https://betasources.in/projects/grin-armer/remove-from-cart',
+        body: {
+          'username' : email,
+          'product_id' : productId.toString(),
+        }
+    );
+
+    print(response.body);
+    var responseBody = jsonDecode(response.body);
+//    Navigator.pop(context);
+    if(responseBody['success'] == false){
+      _scaffoldKey.currentState.hideCurrentSnackBar();
+      showErrDialog(context, responseBody['msg']);
+    } else {
+      print(responseBody['msg']);
+      _scaffoldKey.currentState.hideCurrentSnackBar();
+    }
+    setState(() {});
   }
 
   @override
@@ -217,6 +285,7 @@ class _MyCartPageState extends State<MyCartPage> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           return Scaffold(
+            key: _scaffoldKey,
             appBar: AppBar(
               backgroundColor: appColor,
               elevation: 2.0,
@@ -440,8 +509,8 @@ class _MyCartPageState extends State<MyCartPage> {
                                                     Text("Weight : "),
                                                     int.parse(snapshot
                                                                     .data[index]
-                                                                ['pro_qty']) ==
-                                                            0
+                                                                ['pro_qty']) <
+                                                        int.parse(snapshot.data[index]['qty'])
                                                         ? SizedBox(
                                                             height: 0,
                                                           )
@@ -464,13 +533,13 @@ class _MyCartPageState extends State<MyCartPage> {
                                                         ['weight']),
                                                     int.parse(snapshot
                                                                     .data[index]
-                                                                ['pro_qty']) ==
-                                                            0
+                                                                ['pro_qty']) <
+                                                            int.parse(snapshot.data[index]['qty'])
                                                         ? SizedBox(
                                                             height: 0,
                                                           )
-                                                        : count.length != 0
-                                                            ? Text(count[index])
+                                                        : int.parse(snapshot.data[index]['qty']) != 0
+                                                            ? Text(snapshot.data[index]['qty'])
                                                             : Text(""),
                                                     // int.parse(count[index]) <
                                                     //         int.parse(
@@ -542,7 +611,7 @@ class _MyCartPageState extends State<MyCartPage> {
                                         ],
                                       ),
                                       onPressed: () {
-                                        checker(productIds[index]);
+                                        checker(snapshot.data[index]['product_id']);
                                         // removeProduct(productIds[index]);
                                       },
                                     ),

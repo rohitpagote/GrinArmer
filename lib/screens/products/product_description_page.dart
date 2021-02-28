@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:http/http.dart' as http;
 import 'package:distributer_application/auth/showErrDialog.dart';
 import 'package:distributer_application/base/color_properties.dart';
 import 'package:distributer_application/base/zoomingImg.dart';
@@ -65,6 +65,8 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
     this.images,
   );
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   // Add to Cart operations
   //add products into the cart => initial/new
   addProductId(productId, count) async {
@@ -124,33 +126,76 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
 
   //main function to instatiate addtocart or updatecart operation
   doProductManagement(productId, count) async {
+//    SharedPreferences prefs = await SharedPreferences.getInstance();
+//    List products;
+//    products = prefs.getStringList('cartProducts');
+//    print(products);
+
+//    bool existsInCart = false;
+//
+//    products == null ?? prefs.setStringList("cartProducts", []);
+//
+//    products != []
+//        ? products.every((m) {
+//            m = jsonDecode(m);
+//            var u = Cart.fromJson(m);
+//            if (u.productId == productId) {
+//              existsInCart = true;
+//              (int.parse(u.count) + count) > int.parse(productQty)
+//                  ? showErrDialog(context, 'Product limit exceeded.')
+//                  : updateProduct(productId, count);
+//            }
+//            if (existsInCart)
+//              return false;
+//            else
+//              return true;
+//          })
+//        : addProductId(productId, count);
+//    if (existsInCart == false) {
+//      addProductId(productId, count);
+//    }
+
+    _scaffoldKey.currentState.showSnackBar(
+        SnackBar(
+          duration: Duration(seconds: 60),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Please Wait..'),
+              CircularProgressIndicator(backgroundColor: white, valueColor: AlwaysStoppedAnimation<Color>(appColor),),
+            ],
+          ),
+          behavior: SnackBarBehavior.floating,
+          elevation: 5.0,
+          backgroundColor: appColor,
+
+        )
+    );
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    List products;
-    products = prefs.getStringList('cartProducts');
-    print(products);
+    String email = prefs.getString('email');
 
-    bool existsInCart = false;
+    print(email);
+    print(productId.toString());
+    print(count.toString());
 
-    products == null ?? prefs.setStringList("cartProducts", []);
+    http.Response response = await http.post(
+      'https://betasources.in/projects/grin-armer/add-to-cart',
+      body: {
+        'username' : email,
+        'product_id' : productId.toString(),
+        'qty' : count.toString(),
+      }
+    );
 
-    products != []
-        ? products.every((m) {
-            m = jsonDecode(m);
-            var u = Cart.fromJson(m);
-            if (u.productId == productId) {
-              existsInCart = true;
-              (int.parse(u.count) + count) > int.parse(productQty)
-                  ? showErrDialog(context, 'Product limit exceeded.')
-                  : updateProduct(productId, count);
-            }
-            if (existsInCart)
-              return false;
-            else
-              return true;
-          })
-        : addProductId(productId, count);
-    if (existsInCart == false) {
-      addProductId(productId, count);
+    print(response.body);
+    var responseBody = jsonDecode(response.body);
+    if(responseBody['success'] == true){
+      _scaffoldKey.currentState.hideCurrentSnackBar();
+      showSuccessDialog(context, responseBody['msg']);
+    } else {
+      _scaffoldKey.currentState.hideCurrentSnackBar();
+      showErrDialog(context, responseBody['msg']);
     }
   }
 
@@ -257,6 +302,7 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         backgroundColor: appColor,
         elevation: 2.0,
@@ -618,7 +664,7 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
         elevation: 4.0,
         tooltip: 'Add to cart',
         icon: Icon(
-          Icons.add,
+          Icons.add_shopping_cart_outlined,
           color: white,
         ),
         label: Text(

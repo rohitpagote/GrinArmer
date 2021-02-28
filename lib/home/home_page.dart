@@ -10,6 +10,7 @@ import 'package:distributer_application/screens/account/account_page.dart';
 import 'package:distributer_application/screens/account/http_json.dart';
 import 'package:distributer_application/screens/cart/demo.dart';
 import 'package:distributer_application/screens/cart/mycart_page.dart';
+import 'package:distributer_application/screens/order/orderHistory_page.dart';
 import 'package:distributer_application/screens/products/all_products_page.dart';
 import 'package:distributer_application/screens/products/product_description_page.dart';
 import 'package:flutter/material.dart';
@@ -54,7 +55,7 @@ class _HomePageState extends State<HomePage>
   String userStatus;
 
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-  new GlobalKey<RefreshIndicatorState>();
+      new GlobalKey<RefreshIndicatorState>();
 
   Future<String> getName() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -113,7 +114,10 @@ class _HomePageState extends State<HomePage>
                   border: Border.all(color: appColor, width: 1)),
               child: Align(
                 alignment: Alignment.center,
-                child: Text(responseBody[i]['name'], style: TextStyle(fontFamily: 'Livvic'),),
+                child: Text(
+                  responseBody[i]['name'],
+                  style: TextStyle(fontFamily: 'Livvic'),
+                ),
               ),
             ),
           ),
@@ -135,32 +139,38 @@ class _HomePageState extends State<HomePage>
               itemBuilder: (BuildContext context, int index) {
                 return Card(
                   child: OrientationBuilder(
-                    builder: (context, orientation){
-                      if(orientation == Orientation.landscape){
+                    builder: (context, orientation) {
+                      if (orientation == Orientation.landscape) {
                         return Container(
                           width: MediaQuery.of(context).size.width -
-                              (MediaQuery.of(context).size.width / 2) - 25, // put 190 for landscape
+                              (MediaQuery.of(context).size.width / 2) -
+                              25, // put 190 for landscape
                           child: InkWell(
                             onTap: () {
                               userStatus == '0'
                                   ? showInfoDialog(
-                                  context, 'You are not verified by admin.')
+                                      context, 'You are not verified by admin.')
                                   : Navigator.of(context).push(
-                                MaterialPageRoute(
-                                    builder: (_) => ProductDescriptionPage(
-                                      productId: products[index]['id'],
-                                      productName: products[index]
-                                      ['product_name'],
-                                      productSeries: products[index]
-                                      ['product_series'],
-                                      productQty: products[index]
-                                      ['pro_qty'],
-                                      categoryName: responseBody[i]['name'],
-                                      // categorySeries: products[index][''],
-                                      weight: products[index]['weight'],
-                                      images: products[index]['images'],
-                                    )),
-                              );
+                                      MaterialPageRoute(
+                                          builder: (_) =>
+                                              ProductDescriptionPage(
+                                                productId: products[index]
+                                                    ['id'],
+                                                productName: products[index]
+                                                    ['product_name'],
+                                                productSeries: products[index]
+                                                    ['product_series'],
+                                                productQty: products[index]
+                                                    ['pro_qty'],
+                                                categoryName: responseBody[i]
+                                                    ['name'],
+                                                // categorySeries: products[index][''],
+                                                weight: products[index]
+                                                    ['weight'],
+                                                images: products[index]
+                                                    ['images'],
+                                              )),
+                                    );
                             },
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -169,15 +179,15 @@ class _HomePageState extends State<HomePage>
                                   height: 190.0,
                                   child: GridTile(
                                       child: ClipRRect(
-                                        borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(4.0),
-                                            topRight: Radius.circular(4.0)),
-                                        child: Image.network(
-                                          products[index]['images'][0],
-                                          fit: BoxFit.cover,
-                                        ),
-                                        // Text("R"),
-                                      )),
+                                    borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(4.0),
+                                        topRight: Radius.circular(4.0)),
+                                    child: Image.network(
+                                      products[index]['images'][0],
+                                      fit: BoxFit.cover,
+                                    ),
+                                    // Text("R"),
+                                  )),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(
@@ -211,7 +221,8 @@ class _HomePageState extends State<HomePage>
                                           padding: EdgeInsets.all(2.0),
                                         ),
                                         Text(
-                                          "Weight : " + products[index]['weight'],
+                                          "Weight : " +
+                                              products[index]['weight'],
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           softWrap: false,
@@ -232,28 +243,35 @@ class _HomePageState extends State<HomePage>
                       } else {
                         return Container(
                           width: MediaQuery.of(context).size.width -
-                              (MediaQuery.of(context).size.width / 2) - (MediaQuery.of(context).size.width / 4), // put 190 for landscape
+                              (MediaQuery.of(context).size.width / 2) -
+                              (MediaQuery.of(context).size.width /
+                                  4), // put 190 for landscape
                           child: InkWell(
                             onTap: () {
                               userStatus == '0'
                                   ? showInfoDialog(
-                                  context, 'You are not verified by admin.')
+                                      context, 'You are not verified by admin.')
                                   : Navigator.of(context).push(
-                                MaterialPageRoute(
-                                    builder: (_) => ProductDescriptionPage(
-                                      productId: products[index]['id'],
-                                      productName: products[index]
-                                      ['product_name'],
-                                      productSeries: products[index]
-                                      ['product_series'],
-                                      productQty: products[index]
-                                      ['pro_qty'],
-                                      categoryName: responseBody[i]['name'],
-                                      // categorySeries: products[index][''],
-                                      weight: products[index]['weight'],
-                                      images: products[index]['images'],
-                                    )),
-                              );
+                                      MaterialPageRoute(
+                                          builder: (_) =>
+                                              ProductDescriptionPage(
+                                                productId: products[index]
+                                                    ['id'],
+                                                productName: products[index]
+                                                    ['product_name'],
+                                                productSeries: products[index]
+                                                    ['product_series'],
+                                                productQty: products[index]
+                                                    ['pro_qty'],
+                                                categoryName: responseBody[i]
+                                                    ['name'],
+                                                // categorySeries: products[index][''],
+                                                weight: products[index]
+                                                    ['weight'],
+                                                images: products[index]
+                                                    ['images'],
+                                              )),
+                                    );
                             },
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -262,15 +280,15 @@ class _HomePageState extends State<HomePage>
                                   height: 190.0,
                                   child: GridTile(
                                       child: ClipRRect(
-                                        borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(4.0),
-                                            topRight: Radius.circular(4.0)),
-                                        child: Image.network(
-                                          products[index]['images'][0],
-                                          fit: BoxFit.cover,
-                                        ),
-                                        // Text("R"),
-                                      )),
+                                    borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(4.0),
+                                        topRight: Radius.circular(4.0)),
+                                    child: Image.network(
+                                      products[index]['images'][0],
+                                      fit: BoxFit.cover,
+                                    ),
+                                    // Text("R"),
+                                  )),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(
@@ -304,7 +322,8 @@ class _HomePageState extends State<HomePage>
                                           padding: EdgeInsets.all(2.0),
                                         ),
                                         Text(
-                                          "Weight : " + products[index]['weight'],
+                                          "Weight : " +
+                                              products[index]['weight'],
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           softWrap: false,
@@ -483,9 +502,13 @@ class _HomePageState extends State<HomePage>
     // tabController = TabController(length: 1, vsync: this);
   }
 
-  Future<void> fetchAll(context) async{
-    return fetchUserStatus().then((value){
-      setState(() {print('RohitHere'); tabBars.clear(); tabBarViews.clear();});
+  Future<void> fetchAll(context) async {
+    return fetchUserStatus().then((value) {
+      setState(() {
+        print('RohitHere');
+        tabBars.clear();
+        tabBarViews.clear();
+      });
     });
   }
 
@@ -566,7 +589,8 @@ class _HomePageState extends State<HomePage>
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
                                 children: [
                                   // Image(
                                   //   image: NetworkImage(
@@ -594,15 +618,16 @@ class _HomePageState extends State<HomePage>
                                 ],
                               ),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
                                 children: [
                                   InkWell(
                                     onTap: () {
                                       Navigator.of(context)
                                           .push(MaterialPageRoute(
-                                          builder: (_) => AccountPage(
-                                            email: email,
-                                          )));
+                                              builder: (_) => AccountPage(
+                                                    email: email,
+                                                  )));
                                     },
                                     child: Text(
                                       email,
@@ -684,10 +709,30 @@ class _HomePageState extends State<HomePage>
                           onTap: () {
                             userStatus == '0'
                                 ? showInfoDialog(
-                                context, 'You are not verified by admin.')
+                                    context, 'You are not verified by admin.')
                                 : Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => MyCartPage()),
-                            );
+                                    MaterialPageRoute(
+                                        builder: (_) => MyCartPage()),
+                                  );
+                          },
+                        ),
+                        ListTile(
+                          leading: CircleAvatar(
+                            child: Icon(
+                              Icons.history,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                          title: Text("Order History"),
+                          trailing: Icon(Icons.chevron_right_rounded),
+                          onTap: () {
+                            userStatus == '0'
+                                ? showInfoDialog(
+                                    context, 'You are not verified by admin.')
+                                : Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                        builder: (_) => OrderHistoryPage()),
+                                  );
                           },
                         ),
                         ListTile(
@@ -700,19 +745,21 @@ class _HomePageState extends State<HomePage>
                           title: Text("Profile"),
                           trailing: Icon(Icons.chevron_right_rounded),
                           onTap: () {
-                            Navigator.of(context)
-                                .push(MaterialPageRoute(
-                              builder: (_) => AccountPage(
-                                email: email,
-                              ),),);
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => AccountPage(
+                                  email: email,
+                                ),
+                              ),
+                            );
                           },
                         ),
                         ListTile(
                           leading: CircleAvatar(
                               child: Icon(
-                                Icons.info_outline_rounded,
-                                color: Colors.grey[700],
-                              )),
+                            Icons.info_outline_rounded,
+                            color: Colors.grey[700],
+                          )),
                           title: Text("About"),
                           trailing: Icon(Icons.chevron_right_rounded),
                           onTap: () {
@@ -724,14 +771,14 @@ class _HomePageState extends State<HomePage>
                         ListTile(
                           leading: CircleAvatar(
                               child: Icon(
-                                Icons.logout,
-                                color: Colors.grey[700],
-                              )),
+                            Icons.logout,
+                            color: Colors.grey[700],
+                          )),
                           title: Text("Logout"),
                           trailing: Icon(Icons.chevron_right_rounded),
                           onTap: () async {
                             SharedPreferences prefs =
-                            await SharedPreferences.getInstance();
+                                await SharedPreferences.getInstance();
                             prefs.remove('isLoggedIn');
                             prefs.remove('email');
                             prefs.remove('name');
@@ -739,14 +786,14 @@ class _HomePageState extends State<HomePage>
                               Navigator.of(context).pushAndRemoveUntil(
                                   MaterialPageRoute(
                                       builder: (context) => LoginPage()),
-                                      (route) => false);
+                                  (route) => false);
                             } else {
                               prefs.remove('uid');
                               signOutUser().then((value) {
                                 Navigator.of(context).pushAndRemoveUntil(
                                     MaterialPageRoute(
                                         builder: (context) => LoginPage()),
-                                        (Route<dynamic> route) => false);
+                                    (Route<dynamic> route) => false);
                               });
                             }
                           },
@@ -801,7 +848,8 @@ class _HomePageState extends State<HomePage>
                               child: Text(
                                 "Featured",
                                 style: TextStyle(
-                                    fontSize: 18.0, fontWeight: FontWeight.bold),
+                                    fontSize: 18.0,
+                                    fontWeight: FontWeight.bold),
                               ),
                             ),
                           ),
@@ -817,48 +865,54 @@ class _HomePageState extends State<HomePage>
                                       onTap: () {
                                         userStatus == '0'
                                             ? showInfoDialog(context,
-                                            'You are not verified by admin.')
+                                                'You are not verified by admin.')
                                             : Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (_) =>
-                                                ProductDescriptionPage(
-                                                  productId: snapshot.data[2]
-                                                  [index]['product_id'],
-                                                  productName: snapshot.data[2]
-                                                  [index]['product_name'],
-                                                  productSeries: snapshot.data[2]
-                                                  [index]['product_series'],
-                                                  productQty: snapshot.data[2]
-                                                  [index]['product_quantity'],
-                                                  categoryName: snapshot.data[2]
-                                                  [index]['cat_name'],
-                                                  // categorySeries: products[index][''],
-                                                  weight: snapshot.data[2][index]
-                                                  ['weight'],
-                                                  images: snapshot.data[2][index]
-                                                  ['images'],
+                                                MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      ProductDescriptionPage(
+                                                    productId: snapshot.data[2]
+                                                        [index]['product_id'],
+                                                    productName:
+                                                        snapshot.data[2][index]
+                                                            ['product_name'],
+                                                    productSeries:
+                                                        snapshot.data[2][index]
+                                                            ['product_series'],
+                                                    productQty: snapshot.data[2]
+                                                            [index]
+                                                        ['product_quantity'],
+                                                    categoryName:
+                                                        snapshot.data[2][index]
+                                                            ['cat_name'],
+                                                    // categorySeries: products[index][''],
+                                                    weight: snapshot.data[2]
+                                                        [index]['weight'],
+                                                    images: snapshot.data[2]
+                                                        [index]['images'],
+                                                  ),
                                                 ),
-                                          ),
-                                        );
+                                              );
                                       },
                                       child: Card(
                                         child: Column(
                                           mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             Container(
                                               color: Colors.transparent,
                                               height: 210.0,
-                                              width:
-                                              MediaQuery.of(context).size.width,
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
                                               child: ClipRRect(
                                                 borderRadius: BorderRadius.only(
                                                   topLeft: Radius.circular(4.0),
-                                                  topRight: Radius.circular(4.0),
+                                                  topRight:
+                                                      Radius.circular(4.0),
                                                 ),
                                                 child: Image.network(
-                                                  snapshot.data[2][index]["images"]
-                                                  [0],
+                                                  snapshot.data[2][index]
+                                                      ["images"][0],
                                                   fit: BoxFit.cover,
                                                 ),
                                                 // Text("R"),
@@ -885,30 +939,34 @@ class _HomePageState extends State<HomePage>
                                                   children: [
                                                     Text(
                                                       snapshot.data[2][index]
-                                                      ['product_name'],
+                                                          ['product_name'],
                                                       maxLines: 1,
-                                                      overflow: TextOverflow.fade,
+                                                      overflow:
+                                                          TextOverflow.fade,
                                                       softWrap: false,
                                                       style: TextStyle(
                                                         color: Colors.black,
-                                                        fontWeight: FontWeight.bold,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                         fontSize: 12.0,
                                                       ),
                                                     ),
                                                     Padding(
-                                                      padding: EdgeInsets.all(2.0),
+                                                      padding:
+                                                          EdgeInsets.all(2.0),
                                                     ),
                                                     Text(
                                                       'Weight : ' +
-                                                          snapshot.data[2][index]
-                                                          ['weight'],
+                                                          snapshot.data[2]
+                                                              [index]['weight'],
                                                       maxLines: 1,
                                                       overflow:
-                                                      TextOverflow.ellipsis,
+                                                          TextOverflow.ellipsis,
                                                       softWrap: false,
                                                       style: TextStyle(
                                                         color: grey,
-                                                        fontWeight: FontWeight.bold,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                         fontSize: 12.0,
                                                       ),
                                                     ),
