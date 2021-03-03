@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_page.dart';
 import 'package:http/http.dart' as http;
 
+import 'basicInfo_page.dart';
 import 'showErrDialog.dart';
 
 class LoginPage extends StatefulWidget {
@@ -76,30 +77,44 @@ class _LoginPageState extends State<LoginPage> {
         if (responseData["success"] == false) {
           return showErrDialog(context, responseData['msg']);
         } else {
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          List<String> cartProducts = [];
-          prefs.setBool("isLoggedIn", true);
-          prefs.setString("email", email);
-          prefs.setString("name", responseData['name']);
-          List c = prefs.getStringList("cartProducts");
-          print('cartProducts');
-          print(c);
-          if (c == null) {
-            print('Hi');
-            prefs.setStringList("cartProducts", cartProducts);
+          if (responseData['phone'] != "") {
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            List<String> cartProducts = [];
+            prefs.setBool("isLoggedIn", true);
+            prefs.setString("email", email);
+            prefs.setString("name", responseData['name']);
+            List c = prefs.getStringList("cartProducts");
+            print('cartProducts');
+            print(c);
+            if (c == null) {
+              prefs.setStringList("cartProducts", cartProducts);
+            }
+            // c == null ?? prefs.setStringList("cartProducts", cartProducts);
+            List cc = prefs.getStringList("cartProducts");
+            print('cartProducts');
+            print(cc);
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => HomePage(
+                    email: responseData['email'],
+                    name: responseData['name'],
+                  ),
+                )).then(
+              (_) => formkey.currentState.reset(),
+            );
+          } else {
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BasicInfoPage(
+                    email: responseData['email'],
+                    name: responseData['name'],
+                  ),
+                )).then(
+              (_) => formkey.currentState.reset(),
+            );
           }
-          // c == null ?? prefs.setStringList("cartProducts", cartProducts);
-          List cc = prefs.getStringList("cartProducts");
-          print('cartProducts');
-          print(cc);
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => HomePage(
-                  email: email,
-                  name: responseData['name'],
-                ),
-              )).then((_) => formkey.currentState.reset());
         }
       } else {
         throw Exception("Error, ${response.statusCode}");

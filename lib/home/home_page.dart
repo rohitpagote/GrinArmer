@@ -19,6 +19,8 @@ import 'package:distributer_application/base/color_properties.dart';
 import 'package:distributer_application/home/components/carousel.dart';
 import 'package:distributer_application/home/components/grid_view.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
+import 'package:provider/provider.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../auth/auth_page.dart';
 import 'components/expansion_tile.dart';
@@ -39,8 +41,9 @@ const String userStatusUrl =
 
 class HomePage extends StatefulWidget {
   final String email, name;
-  HomePage({Key key, @required this.email, @required this.name})
-      : super(key: key);
+
+  HomePage({Key key, @required this.email, this.name}) : super(key: key);
+
   @override
   _HomePageState createState() => _HomePageState(email, name);
 }
@@ -48,11 +51,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   final String email, name;
+
   _HomePageState(this.email, this.name);
 
   TabController tabController;
   String fetchedName = "";
   String userStatus;
+  int cartItemCount;
 
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       new GlobalKey<RefreshIndicatorState>();
@@ -95,8 +100,82 @@ class _HomePageState extends State<HomePage>
     fontWeight: FontWeight.bold,
   );
 
+  void logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('isLoggedIn');
+    prefs.remove('email');
+    prefs.remove('name');
+    if (prefs.getString('uid') == null) {
+      Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => LoginPage()),
+          (route) => false);
+    } else {
+      prefs.remove('uid');
+      signOutUser().then((value) {
+        Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => LoginPage()),
+            (Route<dynamic> route) => false);
+      });
+    }
+  }
+
+  void confirmLogout() {
+    Alert(
+      context: context,
+      type: AlertType.warning,
+      title: "WARNING",
+      content: Align(
+        alignment: Alignment.center,
+        child: Text(
+          'Are you sure you want to logout?',
+          style: TextStyle(
+            fontSize: 14.0,
+          ),
+        ),
+      ),
+      style: AlertStyle(
+        animationType: AnimationType.shrink,
+        isCloseButton: false,
+        isOverlayTapDismiss: false,
+        descStyle: TextStyle(fontWeight: FontWeight.bold),
+        descTextAlign: TextAlign.center,
+        animationDuration: Duration(milliseconds: 400),
+        alertBorder: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        titleStyle: TextStyle(
+          color: Colors.orange,
+        ),
+        alertAlignment: Alignment.center,
+      ),
+      buttons: [
+        DialogButton(
+          // border: Border.all(width: 1.0),
+          color: Colors.transparent,
+          child: Text(
+            "YES",
+            style: TextStyle(color: Colors.red, fontSize: 16),
+          ),
+          onPressed: () => logout(),
+          width: 120,
+        ),
+        DialogButton(
+          // border: Border.all(width: 1.0, color: Colors.red),
+          color: Colors.transparent,
+          child: Text(
+            "NO",
+            style: TextStyle(color: mainColor, fontSize: 16),
+          ),
+          onPressed: () => Navigator.pop(context),
+          width: 120,
+        ),
+      ],
+    ).show();
+  }
+
   List<Tab> tabBars = [];
   List<Container> tabBarViews = [];
+
   Future<List<Tab>> getTabs() async {
     http.Response response = await http.get(
         "https://betasources.in/projects/grin-armer/get-recommended-category");
@@ -138,211 +217,96 @@ class _HomePageState extends State<HomePage>
               physics: BouncingScrollPhysics(),
               itemBuilder: (BuildContext context, int index) {
                 return Card(
-                  child: OrientationBuilder(
-                    builder: (context, orientation) {
-                      if (orientation == Orientation.landscape) {
-                        return Container(
-                          width: MediaQuery.of(context).size.width -
-                              (MediaQuery.of(context).size.width / 2) -
-                              25, // put 190 for landscape
-                          child: InkWell(
-                            onTap: () {
-                              userStatus == '0'
-                                  ? showInfoDialog(
-                                      context, 'You are not verified by admin.')
-                                  : Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                          builder: (_) =>
-                                              ProductDescriptionPage(
-                                                productId: products[index]
-                                                    ['id'],
-                                                productName: products[index]
-                                                    ['product_name'],
-                                                productSeries: products[index]
-                                                    ['product_series'],
-                                                productQty: products[index]
-                                                    ['pro_qty'],
-                                                categoryName: responseBody[i]
-                                                    ['name'],
-                                                // categorySeries: products[index][''],
-                                                weight: products[index]
-                                                    ['weight'],
-                                                images: products[index]
-                                                    ['images'],
-                                              )),
-                                    );
-                            },
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Container(
-                                  height: 190.0,
-                                  child: GridTile(
-                                      child: ClipRRect(
-                                    borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(4.0),
-                                        topRight: Radius.circular(4.0)),
-                                    child: Image.network(
-                                      products[index]['images'][0],
-                                      fit: BoxFit.cover,
-                                    ),
-                                    // Text("R"),
-                                  )),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 8.0,
-                                    right: 8.0,
-                                  ),
-                                  child: Divider(
+                  child: SizedBox(
+                    width: 160, // put 190 for landscape
+                    child: InkWell(
+                      onTap: () {
+                        userStatus == '0'
+                            ? showInfoDialog(
+                                context, 'You are not verified by admin.')
+                            : Navigator.of(context)
+                                .push(
+                                MaterialPageRoute(
+                                    builder: (_) => ProductDescriptionPage(
+                                          productId: products[index]['id'],
+                                          productName: products[index]
+                                              ['product_name'],
+                                          productSeries: products[index]
+                                              ['product_series'],
+                                          productQty: products[index]
+                                              ['pro_qty'],
+                                          categoryName: responseBody[i]['name'],
+                                          // categorySeries: products[index][''],
+                                          weight: products[index]['weight'],
+                                          images: products[index]['images'],
+                                        )),
+                              )
+                                .then((value) {
+                                setState(() {
+                                  tabBars.clear();
+                                  tabBarViews.clear();
+                                });
+                              });
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: GridTile(
+                                child: ClipRRect(
+                              borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(4.0),
+                                  topRight: Radius.circular(4.0)),
+                              child: Image.network(
+                                products[index]['images'][0],
+                                fit: BoxFit.cover,
+                              ),
+                              // Text("R"),
+                            )),
+                          ),
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                  bottom: 8.0, right: 8.0, left: 8.0),
+                              child: Column(
+                                children: [
+                                  Divider(
                                     color: appColor,
                                     // height: 20,
                                     thickness: 1,
                                   ),
-                                ),
-                                Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                        bottom: 8.0, right: 8.0, left: 8.0),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          products[index]['product_name'],
-                                          maxLines: 1,
-                                          overflow: TextOverflow.fade,
-                                          softWrap: false,
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12.0,
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.all(2.0),
-                                        ),
-                                        Text(
-                                          "Weight : " +
-                                              products[index]['weight'],
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          softWrap: false,
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12.0,
-                                          ),
-                                        ),
-                                      ],
+                                  Text(
+                                    products[index]['product_name'],
+                                    maxLines: 1,
+                                    overflow: TextOverflow.fade,
+                                    softWrap: false,
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12.0,
                                     ),
                                   ),
-                                ),
-                              ],
+                                  Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                  ),
+                                  Text(
+                                    "Weight : " + products[index]['weight'],
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    softWrap: false,
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12.0,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        );
-                      } else {
-                        return Container(
-                          width: MediaQuery.of(context).size.width -
-                              (MediaQuery.of(context).size.width / 2) -
-                              (MediaQuery.of(context).size.width /
-                                  4), // put 190 for landscape
-                          child: InkWell(
-                            onTap: () {
-                              userStatus == '0'
-                                  ? showInfoDialog(
-                                      context, 'You are not verified by admin.')
-                                  : Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                          builder: (_) =>
-                                              ProductDescriptionPage(
-                                                productId: products[index]
-                                                    ['id'],
-                                                productName: products[index]
-                                                    ['product_name'],
-                                                productSeries: products[index]
-                                                    ['product_series'],
-                                                productQty: products[index]
-                                                    ['pro_qty'],
-                                                categoryName: responseBody[i]
-                                                    ['name'],
-                                                // categorySeries: products[index][''],
-                                                weight: products[index]
-                                                    ['weight'],
-                                                images: products[index]
-                                                    ['images'],
-                                              )),
-                                    );
-                            },
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Container(
-                                  height: 190.0,
-                                  child: GridTile(
-                                      child: ClipRRect(
-                                    borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(4.0),
-                                        topRight: Radius.circular(4.0)),
-                                    child: Image.network(
-                                      products[index]['images'][0],
-                                      fit: BoxFit.cover,
-                                    ),
-                                    // Text("R"),
-                                  )),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 8.0,
-                                    right: 8.0,
-                                  ),
-                                  child: Divider(
-                                    color: appColor,
-                                    // height: 20,
-                                    thickness: 1,
-                                  ),
-                                ),
-                                Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                        bottom: 8.0, right: 8.0, left: 8.0),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          products[index]['product_name'],
-                                          maxLines: 1,
-                                          overflow: TextOverflow.fade,
-                                          softWrap: false,
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12.0,
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.all(2.0),
-                                        ),
-                                        Text(
-                                          "Weight : " +
-                                              products[index]['weight'],
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          softWrap: false,
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12.0,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
-                    },
+                        ],
+                      ),
+                    ),
                   ),
                 );
               },
@@ -486,12 +450,24 @@ class _HomePageState extends State<HomePage>
     }
   }
 
-  Future<List<String>> getCartProductsCount() async {
+  Future<List<dynamic>> getCartProductsCount() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> cartProducts = prefs.getStringList("cartProducts");
-    // print(cartProducts);
-    // print(cartProducts.length);
-    return cartProducts;
+    String email = prefs.getString("email");
+
+    http.Response response = await http.post(
+        'https://betasources.in/projects/grin-armer/get-cart-products',
+        body: {
+          'username': email,
+        });
+
+    print(response.body);
+    cartItemCount = jsonDecode(response.body).length;
+    prefs.setInt("cartItemCount", cartItemCount);
+
+    var cic = prefs.getInt('cartItemCount');
+    print('cartITemCunt' + cic.toString());
+
+    return jsonDecode(response.body);
   }
 
   @override
@@ -506,6 +482,27 @@ class _HomePageState extends State<HomePage>
     return fetchUserStatus().then((value) {
       setState(() {
         print('RohitHere');
+        tabBars.clear();
+        tabBarViews.clear();
+      });
+    });
+  }
+
+  void refresh() {
+    setState(() {
+      tabBars.clear();
+      tabBarViews.clear();
+    });
+  }
+
+  void navigate(pageRoute) {
+    Navigator.of(context).pop();
+    Navigator.of(context)
+        .push(
+      MaterialPageRoute(builder: (_) => pageRoute),
+    )
+        .then((value) {
+      setState(() {
         tabBars.clear();
         tabBarViews.clear();
       });
@@ -528,7 +525,7 @@ class _HomePageState extends State<HomePage>
               fetchCategory(),
               getTabs(),
               fetchUserStatus(),
-              // getCartProductsCount(),
+              getCartProductsCount(),
               // getTabBarViews(),
             ]),
             builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
@@ -551,34 +548,43 @@ class _HomePageState extends State<HomePage>
                     //   height: 48.0,
                     // ),
                     backgroundColor: Colors.transparent,
-                    // actions: [
-                    //   // Icon(Icons.notifications_on_outlined),
-                    //   GestureDetector(
-                    //     child: Padding(
-                    //       padding:
-                    //           EdgeInsets.symmetric(horizontal: 16, vertical: 12.0),
-                    //       child: Badge(
-                    //         badgeContent: Text(
-                    //           '1',
-                    //           style: TextStyle(
-                    //             fontSize: 12,
-                    //             color: white,
-                    //           ),
-                    //         ),
-                    //         child: Icon(Icons.shopping_cart_outlined),
-                    //         animationType: BadgeAnimationType.slide,
-                    //         badgeColor: appColor,
-                    //       ),
-                    //     ),
-                    //     onTap: () {
-                    //       Navigator.push(
-                    //           context,
-                    //           MaterialPageRoute(
-                    //             builder: (context) => MyCartPage(),
-                    //           ));
-                    //     },
-                    //   ),
-                    // ],
+                    actions: [
+                      // Icon(Icons.notifications_on_outlined),
+                      GestureDetector(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12.0),
+                          child: Badge(
+                            badgeContent: Text(
+                              snapshot.data[6].length.toString(),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: white,
+                              ),
+                            ),
+                            child: Icon(Icons.shopping_cart_outlined),
+                            animationType: BadgeAnimationType.slide,
+                            badgeColor: appColor,
+                          ),
+                        ),
+                        onTap: () {
+                          userStatus == '0'
+                              ? showInfoDialog(
+                                  context, 'You are not verified by admin.')
+                              : Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => MyCartPage(),
+                                  ),
+                                ).then((value) {
+                                  setState(() {
+                                    tabBars.clear();
+                                    tabBarViews.clear();
+                                  });
+                                });
+                        },
+                      ),
+                    ],
                   ),
                   drawer: Drawer(
                     child: ListView(
@@ -623,11 +629,11 @@ class _HomePageState extends State<HomePage>
                                 children: [
                                   InkWell(
                                     onTap: () {
-                                      Navigator.of(context)
-                                          .push(MaterialPageRoute(
-                                              builder: (_) => AccountPage(
-                                                    email: email,
-                                                  )));
+                                      navigate(
+                                        AccountPage(
+                                          email: email,
+                                        ),
+                                      );
                                     },
                                     child: Text(
                                       email,
@@ -652,15 +658,15 @@ class _HomePageState extends State<HomePage>
                             child: Icon(
                               Icons.dashboard_outlined,
                               //auto_awesome_motion
-                              color: Colors.grey[700],
+                              color: appColor,
                             ),
                           ),
                           title: Text('Categories'),
                           children: [
                             Padding(
                               padding: const EdgeInsets.only(left: 8.0),
-                              child: DynamicExpansionTileList(
-                                  snapshot.data[3], userStatus),
+                              child: DynamicExpansionTileList(snapshot.data[3],
+                                  userStatus, refresh, cartItemCount),
                             ),
                           ],
                         ),
@@ -701,7 +707,7 @@ class _HomePageState extends State<HomePage>
                           leading: CircleAvatar(
                             child: Icon(
                               Icons.shopping_cart_outlined,
-                              color: Colors.grey[700],
+                              color: appColor,
                             ),
                           ),
                           title: Text("My Cart"),
@@ -710,9 +716,8 @@ class _HomePageState extends State<HomePage>
                             userStatus == '0'
                                 ? showInfoDialog(
                                     context, 'You are not verified by admin.')
-                                : Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                        builder: (_) => MyCartPage()),
+                                : navigate(
+                                    MyCartPage(),
                                   );
                           },
                         ),
@@ -720,7 +725,7 @@ class _HomePageState extends State<HomePage>
                           leading: CircleAvatar(
                             child: Icon(
                               Icons.history,
-                              color: Colors.grey[700],
+                              color: appColor,
                             ),
                           ),
                           title: Text("Order History"),
@@ -729,9 +734,8 @@ class _HomePageState extends State<HomePage>
                             userStatus == '0'
                                 ? showInfoDialog(
                                     context, 'You are not verified by admin.')
-                                : Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                        builder: (_) => OrderHistoryPage()),
+                                : navigate(
+                                    OrderHistoryPage(),
                                   );
                           },
                         ),
@@ -739,17 +743,15 @@ class _HomePageState extends State<HomePage>
                           leading: CircleAvatar(
                             child: Icon(
                               Icons.person_outline,
-                              color: Colors.grey[700],
+                              color: appColor,
                             ),
                           ),
                           title: Text("Profile"),
                           trailing: Icon(Icons.chevron_right_rounded),
                           onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => AccountPage(
-                                  email: email,
-                                ),
+                            navigate(
+                              AccountPage(
+                                email: email,
                               ),
                             );
                           },
@@ -758,13 +760,13 @@ class _HomePageState extends State<HomePage>
                           leading: CircleAvatar(
                               child: Icon(
                             Icons.info_outline_rounded,
-                            color: Colors.grey[700],
+                            color: appColor,
                           )),
                           title: Text("About"),
                           trailing: Icon(Icons.chevron_right_rounded),
                           onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => AboutPage()),
+                            navigate(
+                              AboutPage(),
                             );
                           },
                         ),
@@ -772,30 +774,12 @@ class _HomePageState extends State<HomePage>
                           leading: CircleAvatar(
                               child: Icon(
                             Icons.logout,
-                            color: Colors.grey[700],
+                            color: appColor,
                           )),
                           title: Text("Logout"),
                           trailing: Icon(Icons.chevron_right_rounded),
-                          onTap: () async {
-                            SharedPreferences prefs =
-                                await SharedPreferences.getInstance();
-                            prefs.remove('isLoggedIn');
-                            prefs.remove('email');
-                            prefs.remove('name');
-                            if (prefs.getString('uid') == null) {
-                              Navigator.of(context).pushAndRemoveUntil(
-                                  MaterialPageRoute(
-                                      builder: (context) => LoginPage()),
-                                  (route) => false);
-                            } else {
-                              prefs.remove('uid');
-                              signOutUser().then((value) {
-                                Navigator.of(context).pushAndRemoveUntil(
-                                    MaterialPageRoute(
-                                        builder: (context) => LoginPage()),
-                                    (Route<dynamic> route) => false);
-                              });
-                            }
+                          onTap: () {
+                            confirmLogout();
                           },
                         ),
                         // Divider(
@@ -866,7 +850,8 @@ class _HomePageState extends State<HomePage>
                                         userStatus == '0'
                                             ? showInfoDialog(context,
                                                 'You are not verified by admin.')
-                                            : Navigator.of(context).push(
+                                            : Navigator.of(context)
+                                                .push(
                                                 MaterialPageRoute(
                                                   builder: (_) =>
                                                       ProductDescriptionPage(
@@ -891,19 +876,20 @@ class _HomePageState extends State<HomePage>
                                                         [index]['images'],
                                                   ),
                                                 ),
-                                              );
+                                              )
+                                                .then((value) {
+                                                setState(() {
+                                                  tabBars.clear();
+                                                  tabBarViews.clear();
+                                                });
+                                              });
                                       },
                                       child: Card(
                                         child: Column(
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Container(
-                                              color: Colors.transparent,
-                                              height: 210.0,
-                                              width: MediaQuery.of(context)
-                                                  .size
-                                                  .width,
+                                            Expanded(
                                               child: ClipRRect(
                                                 borderRadius: BorderRadius.only(
                                                   topLeft: Radius.circular(4.0),
@@ -931,10 +917,8 @@ class _HomePageState extends State<HomePage>
                                             // ),
                                             Center(
                                               child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    bottom: 8.0,
-                                                    right: 8.0,
-                                                    left: 8.0),
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
                                                 child: Column(
                                                   children: [
                                                     Text(
@@ -1135,6 +1119,8 @@ class _HomePageState extends State<HomePage>
                     ),
                   ),
                 );
+              } else if(snapshot.hasError){
+                Scaffold(body: Center(child: Text('Server Error'),),);
               }
               return Scaffold(
                 body: CustomLoader(),

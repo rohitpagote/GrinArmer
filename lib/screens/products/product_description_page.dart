@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:badges/badges.dart';
+import 'package:distributer_application/screens/cart/mycart_page.dart';
 import 'package:http/http.dart' as http;
 import 'package:distributer_application/auth/showErrDialog.dart';
 import 'package:distributer_application/base/color_properties.dart';
@@ -19,6 +21,8 @@ class ProductDescriptionPage extends StatefulWidget {
       categorySeries,
       weight;
   final List<dynamic> images;
+  int cartItemCount;
+
   ProductDescriptionPage({
     Key key,
     @required this.productId,
@@ -29,7 +33,9 @@ class ProductDescriptionPage extends StatefulWidget {
     this.categorySeries,
     @required this.weight,
     this.images,
+    this.cartItemCount,
   }) : super(key: key);
+
   @override
   _ProductDescriptionPageState createState() => _ProductDescriptionPageState(
         productId,
@@ -40,6 +46,7 @@ class ProductDescriptionPage extends StatefulWidget {
         categorySeries,
         weight,
         images,
+      cartItemCount,
       );
 }
 
@@ -54,6 +61,8 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
       categorySeries,
       weight;
   final List<dynamic> images;
+  int cartItemCount;
+
   _ProductDescriptionPageState(
     this.productId,
     this.productName,
@@ -63,6 +72,7 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
     this.categorySeries,
     this.weight,
     this.images,
+      this.cartItemCount,
   );
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -155,42 +165,49 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
 //      addProductId(productId, count);
 //    }
 
-    _scaffoldKey.currentState.showSnackBar(
-        SnackBar(
-          duration: Duration(seconds: 60),
-          content: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Please Wait..'),
-              CircularProgressIndicator(backgroundColor: white, valueColor: AlwaysStoppedAnimation<Color>(appColor),),
-            ],
+    _scaffoldKey.currentState.showSnackBar(SnackBar(
+      duration: Duration(seconds: 60),
+      content: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Please Wait..'),
+          CircularProgressIndicator(
+            backgroundColor: white,
+            valueColor: AlwaysStoppedAnimation<Color>(appColor),
           ),
-          behavior: SnackBarBehavior.floating,
-          elevation: 5.0,
-          backgroundColor: appColor,
-
-        )
-    );
+        ],
+      ),
+      behavior: SnackBarBehavior.floating,
+      elevation: 3.0,
+      backgroundColor: appColor,
+    ));
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String email = prefs.getString('email');
+    var cic = prefs.getInt('cartItemCount');
 
     print(email);
     print(productId.toString());
     print(count.toString());
 
-    http.Response response = await http.post(
-      'https://betasources.in/projects/grin-armer/add-to-cart',
-      body: {
-        'username' : email,
-        'product_id' : productId.toString(),
-        'qty' : count.toString(),
-      }
-    );
+    http.Response response = await http
+        .post('https://betasources.in/projects/grin-armer/add-to-cart', body: {
+      'username': email,
+      'product_id': productId.toString(),
+      'qty': count.toString(),
+    });
 
     print(response.body);
     var responseBody = jsonDecode(response.body);
-    if(responseBody['success'] == true){
+    if (responseBody['success'] == true) {
+      if(responseBody['msg'] == 'Item added to cart.'){
+        cic++;
+        prefs.setInt('cartItemCount', cic);
+        setState(() {
+          cartItemCount = cic;
+          count = count;
+        });
+      }
       _scaffoldKey.currentState.hideCurrentSnackBar();
       showSuccessDialog(context, responseBody['msg']);
     } else {
@@ -234,6 +251,7 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
   }
 
   List cartProducts;
+
   void getSPData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     cartProducts = prefs.getStringList('cartProducts');
@@ -241,30 +259,33 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
 
   //add function
   void add() {
-    bool existsInCart = false;
-    cartProducts != [] ??
-        cartProducts.every((m) {
-          m = jsonDecode(m);
-          var u = Cart.fromJson(m);
-          if (u.productId == productId) {
-            existsInCart = true;
-            (int.parse(u.count) + count) > int.parse(productQty)
-                ? showErrDialog(context, 'Product limit exceeded')
-                : setState(() {
-                    if (count < int.parse(productQty)) count++;
-                  });
-          }
-          if (existsInCart)
-            return false;
-          else
-            return true;
-        });
-
-    if (existsInCart == false) {
-      setState(() {
-        if (count < int.parse(productQty)) count++;
-      });
-    }
+    setState(() {
+      if (count < int.parse(productQty)) count++;
+    });
+//    bool existsInCart = false;
+//    cartProducts != [] ??
+//        cartProducts.every((m) {
+//          m = jsonDecode(m);
+//          var u = Cart.fromJson(m);
+//          if (u.productId == productId) {
+//            existsInCart = true;
+//            (int.parse(u.count) + count) > int.parse(productQty)
+//                ? showErrDialog(context, 'Product limit exceeded')
+//                : setState(() {
+//                    if (count < int.parse(productQty)) count++;
+//                  });
+//          }
+//          if (existsInCart)
+//            return false;
+//          else
+//            return true;
+//        });
+//
+//    if (existsInCart == false) {
+//      setState(() {
+//        if (count < int.parse(productQty)) count++;
+//      });
+//    }
   }
 
   //minus function
@@ -274,12 +295,23 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
     });
   }
 
+  getCartItemCount() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var cic = prefs.getInt('cartItemCount');
+    print('cartITemCunt' + cic.toString());
+    setState(() {
+      cartItemCount = cic;
+      count = count;
+    });
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     count = 1;
-    getSPData();
+//    getSPData();
+    getCartItemCount();
   }
 
   final headingStyle = TextStyle(
@@ -316,6 +348,38 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
         iconTheme: IconThemeData(
           color: white,
         ),
+        actions: [
+          // Icon(Icons.notifications_on_outlined),
+          GestureDetector(
+            child: Padding(
+              padding:
+              EdgeInsets.symmetric(horizontal: 16, vertical: 12.0),
+              child: Badge(
+                badgeContent: Text(
+                  cartItemCount.toString(),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: white,
+                  ),
+                ),
+                child: Icon(Icons.shopping_cart_outlined),
+                animationType: BadgeAnimationType.slide,
+                badgeColor: appColor,
+              ),
+            ),
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MyCartPage(),
+                  )).then((value){
+                    setState(() {
+                      getCartItemCount();
+                    });
+              });
+            },
+          ),
+        ],
 //        bottom: PreferredSize(
 //          child: Container(
 //            color: appColor,

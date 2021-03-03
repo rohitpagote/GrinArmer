@@ -12,7 +12,9 @@ import 'package:device_info/device_info.dart';
 
 class AccountPage extends StatefulWidget {
   final String email;
+
   AccountPage({Key key, @required this.email}) : super(key: key);
+
   @override
   _AccountPageState createState() => _AccountPageState(email);
 }
@@ -23,6 +25,7 @@ class _AccountPageState extends State<AccountPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final String email;
+
   _AccountPageState(this.email);
 
   static const String addDetailsUrl =
@@ -58,6 +61,16 @@ class _AccountPageState extends State<AccountPage> {
   final phoneNoValidator = MultiValidator([
     LengthRangeValidator(min: 10, max: 10, errorText: "Length must be 10 only"),
     // MinLengthValidator(10, errorText: "Length must be 10 only")
+  ]);
+
+  //shop name validator
+  final shopNameValidator = MultiValidator([
+    RequiredValidator(errorText: "Shop Name is required"),
+  ]);
+
+  //shop name validator
+  final addressLine1Validator = MultiValidator([
+    RequiredValidator(errorText: "Address Line 1 is required"),
   ]);
 
   //pincode validator
@@ -145,6 +158,7 @@ class _AccountPageState extends State<AccountPage> {
 
   //get states
   List<String> states = [];
+
   getStates(country) async {
     // states.clear();
     http.Response response = await http.get(
@@ -166,6 +180,7 @@ class _AccountPageState extends State<AccountPage> {
 
   //get states
   List<String> cities = [];
+
   getCities(state) async {
     http.Response response = await http.get(
         "https://betasources.in/projects/grin-armer/get-city?state=$state");
@@ -277,6 +292,7 @@ class _AccountPageState extends State<AccountPage> {
               iconTheme: IconThemeData(
                 color: white,
               ),
+
               // bottom: PreferredSize(
               //   child: Container(
               //     color: white,
@@ -507,6 +523,8 @@ class _AccountPageState extends State<AccountPage> {
                                 padding: EdgeInsets.only(left: 20, right: 20),
                                 child: TextFormField(
                                   initialValue: snapshot.data[1]["shopName"],
+                                  autovalidateMode:
+                                      AutovalidateMode.onUserInteraction,
                                   style: TextStyle(
                                     fontSize: 16,
                                     height: 1.0,
@@ -527,6 +545,20 @@ class _AccountPageState extends State<AccountPage> {
                                           width: 1,
                                         ),
                                       ),
+                                      errorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                        borderSide: BorderSide(
+                                          color: Colors.red,
+                                          width: 1,
+                                        ),
+                                      ),
+                                      focusedErrorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                        borderSide: BorderSide(
+                                          color: Colors.red,
+                                          width: 1,
+                                        ),
+                                      ),
                                       prefixIcon: Padding(
                                         child: IconTheme(
                                           data: IconThemeData(
@@ -537,7 +569,7 @@ class _AccountPageState extends State<AccountPage> {
                                         padding: EdgeInsets.only(
                                             left: 20, right: 10),
                                       )),
-                                  // validator: passwordValidator,
+                                  validator: shopNameValidator,
                                   onChanged: (val) {
                                     shopName = val;
                                   },
@@ -574,6 +606,20 @@ class _AccountPageState extends State<AccountPage> {
                                       borderRadius: BorderRadius.circular(4),
                                       borderSide: BorderSide(
                                         color: grey,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                      borderSide: BorderSide(
+                                        color: Colors.red,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    focusedErrorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                      borderSide: BorderSide(
+                                        color: Colors.red,
                                         width: 1,
                                       ),
                                     ),
@@ -662,6 +708,20 @@ class _AccountPageState extends State<AccountPage> {
                                       borderRadius: BorderRadius.circular(4),
                                       borderSide: BorderSide(
                                         color: grey,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                      borderSide: BorderSide(
+                                        color: Colors.red,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    focusedErrorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                      borderSide: BorderSide(
+                                        color: Colors.red,
                                         width: 1,
                                       ),
                                     ),
@@ -754,6 +814,20 @@ class _AccountPageState extends State<AccountPage> {
                                         width: 1,
                                       ),
                                     ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                      borderSide: BorderSide(
+                                        color: Colors.red,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    focusedErrorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                      borderSide: BorderSide(
+                                        color: Colors.red,
+                                        width: 1,
+                                      ),
+                                    ),
                                     prefixIcon: Padding(
                                       child: IconTheme(
                                         data:
@@ -815,6 +889,8 @@ class _AccountPageState extends State<AccountPage> {
                                   initialValue: snapshot.data[1]
                                       ["addressLine1"],
                                   keyboardType: TextInputType.streetAddress,
+                                  autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
                                   style: TextStyle(
                                     fontSize: 16,
                                     height: 1.0,
@@ -835,6 +911,20 @@ class _AccountPageState extends State<AccountPage> {
                                           width: 1,
                                         ),
                                       ),
+                                      errorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                        borderSide: BorderSide(
+                                          color: Colors.red,
+                                          width: 1,
+                                        ),
+                                      ),
+                                      focusedErrorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                        borderSide: BorderSide(
+                                          color: Colors.red,
+                                          width: 1,
+                                        ),
+                                      ),
                                       prefixIcon: Padding(
                                         child: IconTheme(
                                           data: IconThemeData(
@@ -844,7 +934,7 @@ class _AccountPageState extends State<AccountPage> {
                                         padding: EdgeInsets.only(
                                             left: 20, right: 10),
                                       )),
-                                  // validator: passwordValidator,
+                                  validator: addressLine1Validator,
                                   onChanged: (val) {
                                     addressLine1 = val;
                                   },
@@ -863,7 +953,7 @@ class _AccountPageState extends State<AccountPage> {
                                     height: 1.0,
                                   ),
                                   decoration: InputDecoration(
-                                      labelText: "Address Line 2",
+                                      labelText: "Address Line 2 (Optional)",
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(4),
                                         borderSide: BorderSide(
@@ -964,38 +1054,110 @@ class _AccountPageState extends State<AccountPage> {
                                 minWidth:
                                     MediaQuery.of(context).size.width - 100,
                                 onPressed: () {
-                                  var flag = 0;
-                                  if(phoneNo.length != 10){
-                                    flag = 1;
-                                    _scaffoldKey.currentState.showSnackBar(
-                                        SnackBar(
-                                          duration: Duration(seconds: 3),
-                                          content: Text('Length of Phone no must be 10 only.'),
-                                          behavior: SnackBarBehavior.floating,
-                                          elevation: 5.0,
-                                          backgroundColor: Colors.red,
+                                  if (name == '') {
+                                    _scaffoldKey.currentState
+                                        .showSnackBar(SnackBar(
+                                      duration: Duration(seconds: 1),
+                                      content: Text('Name is required.'),
+                                      behavior: SnackBarBehavior.floating,
+                                      elevation: 3.0,
+                                      backgroundColor: Colors.redAccent,
 //                                        shape: RoundedRectangleBorder(
 //                                            borderRadius: BorderRadius.all(Radius.circular(20))),
-                                        )
-                                    );
+                                    ));
                                   }
-                                  if(pincode.length != 6){
-                                    flag = 1;
-                                    _scaffoldKey.currentState.showSnackBar(
-                                        SnackBar(
-                                          duration: Duration(seconds: 3),
-                                          content: Text('Length of Pincode must be 10 only.'),
-                                          behavior: SnackBarBehavior.floating,
-                                          elevation: 5.0,
-                                          backgroundColor: Colors.red,
+                                  if (phoneNo.length != 10) {
+                                    _scaffoldKey.currentState
+                                        .showSnackBar(SnackBar(
+                                      duration: Duration(seconds: 1),
+                                      content: Text(
+                                          'Length of Phone no must be 10 only.'),
+                                      behavior: SnackBarBehavior.floating,
+                                      elevation: 3.0,
+                                      backgroundColor: Colors.redAccent,
 //                                        shape: RoundedRectangleBorder(
 //                                            borderRadius: BorderRadius.all(Radius.circular(20))),
-                                        )
-                                    );
+                                    ));
                                   }
-                                  if(flag == 0){
-                                    addUserDetails();
+                                  if (shopName == '') {
+                                    _scaffoldKey.currentState
+                                        .showSnackBar(SnackBar(
+                                      duration: Duration(seconds: 1),
+                                      content: Text(
+                                          'Shop Name is required.'),
+                                      behavior: SnackBarBehavior.floating,
+                                      elevation: 3.0,
+                                      backgroundColor: Colors.redAccent,
+//                                        shape: RoundedRectangleBorder(
+//                                            borderRadius: BorderRadius.all(Radius.circular(20))),
+                                    ));
                                   }
+                                  if (country == '') {
+                                    _scaffoldKey.currentState
+                                        .showSnackBar(SnackBar(
+                                      duration: Duration(seconds: 1),
+                                      content: Text(
+                                          'Country is required.'),
+                                      behavior: SnackBarBehavior.floating,
+                                      elevation: 3.0,
+                                      backgroundColor: Colors.redAccent,
+//                                        shape: RoundedRectangleBorder(
+//                                            borderRadius: BorderRadius.all(Radius.circular(20))),
+                                    ));
+                                  }
+                                  if (state == '') {
+                                    _scaffoldKey.currentState
+                                        .showSnackBar(SnackBar(
+                                      duration: Duration(seconds: 1),
+                                      content: Text(
+                                          'State is required.'),
+                                      behavior: SnackBarBehavior.floating,
+                                      elevation: 3.0,
+                                      backgroundColor: Colors.redAccent,
+//                                        shape: RoundedRectangleBorder(
+//                                            borderRadius: BorderRadius.all(Radius.circular(20))),
+                                    ));
+                                  }
+                                  if (city == '') {
+                                    _scaffoldKey.currentState
+                                        .showSnackBar(SnackBar(
+                                      duration: Duration(seconds: 1),
+                                      content: Text(
+                                          'City is required.'),
+                                      behavior: SnackBarBehavior.floating,
+                                      elevation: 3.0,
+                                      backgroundColor: Colors.redAccent,
+//                                        shape: RoundedRectangleBorder(
+//                                            borderRadius: BorderRadius.all(Radius.circular(20))),
+                                    ));
+                                  }
+                                  if (addressLine1 == '') {
+                                    _scaffoldKey.currentState
+                                        .showSnackBar(SnackBar(
+                                      duration: Duration(seconds: 1),
+                                      content: Text(
+                                          'Address Line 1 is required.'),
+                                      behavior: SnackBarBehavior.floating,
+                                      elevation: 3.0,
+                                      backgroundColor: Colors.redAccent,
+//                                        shape: RoundedRectangleBorder(
+//                                            borderRadius: BorderRadius.all(Radius.circular(20))),
+                                    ));
+                                  }
+                                  if (pincode.length != 6) {
+                                    _scaffoldKey.currentState
+                                        .showSnackBar(SnackBar(
+                                      duration: Duration(seconds: 1),
+                                      content: Text(
+                                          'Length of Pincode must be 6 only.'),
+                                      behavior: SnackBarBehavior.floating,
+                                      elevation: 3.0,
+                                      backgroundColor: Colors.redAccent,
+//                                        shape: RoundedRectangleBorder(
+//                                            borderRadius: BorderRadius.all(Radius.circular(20))),
+                                    ));
+                                  }
+                                  addUserDetails();
                                 },
                                 child: Text(
                                   "SAVE",

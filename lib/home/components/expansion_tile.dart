@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 class DynamicExpansionTileList extends StatelessWidget {
   final List<dynamic> categoryList;
   final String userStatus;
+  final Function refresh;
+  final int cartItemCount;
 
-  DynamicExpansionTileList(this.categoryList, this.userStatus);
+  DynamicExpansionTileList(this.categoryList, this.userStatus, this.refresh, this.cartItemCount);
 
   List<Widget> getTiles() {
     print(categoryList);
@@ -14,12 +16,12 @@ class DynamicExpansionTileList extends StatelessWidget {
     categoryList.forEach((element) {
       if (element['subcategories'] == null) {
         children.add(
-          DynamicExpansionTile(element['id'], element['name'], userStatus),
+          DynamicExpansionTile(element['id'], element['name'], userStatus, refresh, cartItemCount),
         );
       } else {
         children.add(
           DynamicExpansionTileWithSubcategories(element['id'], element['name'],
-              element['subcategories'], userStatus),
+              element['subcategories'], userStatus, refresh, cartItemCount),
         );
       }
     });
@@ -37,15 +39,30 @@ class DynamicExpansionTileList extends StatelessWidget {
 //without subcategories
 class DynamicExpansionTile extends StatefulWidget {
   final String id, category, userStatus;
-  DynamicExpansionTile(this.id, this.category, this.userStatus);
+  final Function refresh;
+  final int cartItemCount;
+
+  DynamicExpansionTile(this.id, this.category, this.userStatus, this.refresh, this.cartItemCount);
+
   @override
   State createState() => DynamicExpansionTileState();
 }
 
 class DynamicExpansionTileState extends State<DynamicExpansionTile> {
+
   @override
   void initState() {
     super.initState();
+  }
+
+  void navigate(pageRoute) {
+    Navigator.of(context).pop();
+    Navigator.of(context)
+        .push(
+      MaterialPageRoute(
+        builder: (_) => pageRoute,
+      ),
+    );
   }
 
   @override
@@ -57,11 +74,14 @@ class DynamicExpansionTileState extends State<DynamicExpansionTile> {
       onTap: () {
         widget.userStatus == '0'
             ? showInfoDialog(context, 'You are not verified by admin.')
-            : Navigator.of(context).push(MaterialPageRoute(
-                builder: (_) => AllProductsPage(
-                      categoryId: widget.id,
-                      categoryName: widget.category,
-                    )));
+            : navigate(
+                AllProductsPage(
+                  categoryId: widget.id,
+                  categoryName: widget.category,
+                  refresh:  widget.refresh,
+                    cartItemCount: widget.cartItemCount,
+                ),
+              );
       },
     );
   }
@@ -74,17 +94,32 @@ class DynamicExpansionTileWithSubcategories extends StatefulWidget {
   final String id;
 
   final String userStatus;
+  final Function refresh;
+  final int cartItemCount;
+
   DynamicExpansionTileWithSubcategories(
-      this.id, this.category, this.subcategories, this.userStatus);
+      this.id, this.category, this.subcategories, this.userStatus, this.refresh, this.cartItemCount);
+
   @override
   State createState() => DynamicExpansionTileWithSubcategoriesState();
 }
 
 class DynamicExpansionTileWithSubcategoriesState
     extends State<DynamicExpansionTileWithSubcategories> {
+
   @override
   void initState() {
     super.initState();
+  }
+
+  void navigate(pageRoute) {
+    Navigator.of(context).pop();
+    Navigator.of(context)
+        .push(
+      MaterialPageRoute(
+        builder: (_) => pageRoute,
+      ),
+    );
   }
 
   List<Widget> getSubcategoriesTile() {
@@ -99,11 +134,14 @@ class DynamicExpansionTileWithSubcategoriesState
           onTap: () {
             widget.userStatus == '0'
                 ? showInfoDialog(context, 'You are not verified by admin.')
-                : Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => AllProductsPage(
-                          categoryId: element['sub_id'],
-                          categoryName: element['name'],
-                        )));
+                : navigate(
+                    AllProductsPage(
+                      categoryId: element['sub_id'],
+                      categoryName: element['name'],
+                      refresh:  widget.refresh,
+                        cartItemCount: widget.cartItemCount,
+                    ),
+                  );
           },
         ),
       );

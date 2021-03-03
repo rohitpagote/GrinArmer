@@ -4,6 +4,8 @@ import 'package:distributer_application/auth/showErrDialog.dart';
 import 'package:distributer_application/base/color_properties.dart';
 import 'package:distributer_application/base/custom_loader.dart';
 import 'package:distributer_application/base/zoomingImg.dart';
+import 'package:distributer_application/home/components/demo_file.dart';
+import 'package:distributer_application/home/home_page.dart';
 import 'package:distributer_application/screens/products/cart_product_management.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
@@ -93,11 +95,10 @@ class _MyCartPageState extends State<MyCartPage> {
     String email = prefs.getString("email");
 
     http.Response response = await http.post(
-      'https://betasources.in/projects/grin-armer/get-cart-products',
-      body: {
-        'username' : email,
-      }
-    );
+        'https://betasources.in/projects/grin-armer/get-cart-products',
+        body: {
+          'username': email,
+        });
 
     print(response.body);
     return jsonDecode(response.body);
@@ -133,17 +134,43 @@ class _MyCartPageState extends State<MyCartPage> {
 //      showErrConfirmDialog(context, responseBody['msg']);
 //    }
 
+    _scaffoldKey.currentState.showSnackBar(SnackBar(
+      duration: Duration(seconds: 30),
+      content: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Please Wait..'),
+          CircularProgressIndicator(
+            backgroundColor: white,
+            valueColor: AlwaysStoppedAnimation<Color>(appColor),
+          ),
+        ],
+      ),
+      behavior: SnackBarBehavior.floating,
+      elevation: 3.0,
+      backgroundColor: appColor,
+    ));
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String email = prefs.getString("email");
 
     http.Response response = await http.post(
         'https://betasources.in/projects/grin-armer/cart-for-enquiry',
         body: {
-          'username' : email,
-        }
-    );
+          'username': email,
+        });
 
     print(response.body);
+    var responseBody = jsonDecode(response.body);
+    if (responseBody['success'] == true) {
+      prefs.setInt('cartItemCount', 0);
+      _scaffoldKey.currentState.hideCurrentSnackBar();
+      showSuccessDialog(context, responseBody['msg']);
+      setState(() {});
+    } else {
+      _scaffoldKey.currentState.hideCurrentSnackBar();
+      showErrDialog(context, responseBody['msg']);
+    }
   }
 
   //checker
@@ -238,44 +265,50 @@ class _MyCartPageState extends State<MyCartPage> {
 
     Navigator.pop(context);
 //    showErrDialog(context, 'Loading..');
-    _scaffoldKey.currentState.showSnackBar(
-        SnackBar(
-          duration: Duration(seconds: 60),
-          content: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Please Wait..'),
-              CircularProgressIndicator(backgroundColor: white, valueColor: AlwaysStoppedAnimation<Color>(appColor),),
-            ],
+    _scaffoldKey.currentState.showSnackBar(SnackBar(
+      duration: Duration(seconds: 60),
+      content: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Please Wait..'),
+          CircularProgressIndicator(
+            backgroundColor: white,
+            valueColor: AlwaysStoppedAnimation<Color>(appColor),
           ),
-          behavior: SnackBarBehavior.floating,
-          elevation: 5.0,
-          backgroundColor: appColor,
-        )
-    );
+        ],
+      ),
+      behavior: SnackBarBehavior.floating,
+      elevation: 3.0,
+      backgroundColor: appColor,
+    ));
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String email = prefs.getString('email');
+    int cartItemCount = prefs.getInt('cartItemCount');
 
     http.Response response = await http.post(
         'https://betasources.in/projects/grin-armer/remove-from-cart',
         body: {
-          'username' : email,
-          'product_id' : productId.toString(),
-        }
-    );
+          'username': email,
+          'product_id': productId.toString(),
+        });
 
     print(response.body);
     var responseBody = jsonDecode(response.body);
 //    Navigator.pop(context);
-    if(responseBody['success'] == false){
+    if (responseBody['success'] == false) {
+      setState(() {});
       _scaffoldKey.currentState.hideCurrentSnackBar();
       showErrDialog(context, responseBody['msg']);
     } else {
+      print(cartItemCount);
+      cartItemCount = cartItemCount - 1;
+      print(cartItemCount);
+      prefs.setInt('cartItemCount', (cartItemCount));
       print(responseBody['msg']);
+      setState(() {});
       _scaffoldKey.currentState.hideCurrentSnackBar();
     }
-    setState(() {});
   }
 
   @override
@@ -510,7 +543,9 @@ class _MyCartPageState extends State<MyCartPage> {
                                                     int.parse(snapshot
                                                                     .data[index]
                                                                 ['pro_qty']) <
-                                                        int.parse(snapshot.data[index]['qty'])
+                                                            int.parse(snapshot
+                                                                    .data[index]
+                                                                ['qty'])
                                                         ? SizedBox(
                                                             height: 0,
                                                           )
@@ -534,12 +569,19 @@ class _MyCartPageState extends State<MyCartPage> {
                                                     int.parse(snapshot
                                                                     .data[index]
                                                                 ['pro_qty']) <
-                                                            int.parse(snapshot.data[index]['qty'])
+                                                            int.parse(snapshot
+                                                                    .data[index]
+                                                                ['qty'])
                                                         ? SizedBox(
                                                             height: 0,
                                                           )
-                                                        : int.parse(snapshot.data[index]['qty']) != 0
-                                                            ? Text(snapshot.data[index]['qty'])
+                                                        : int.parse(snapshot
+                                                                        .data[index]
+                                                                    ['qty']) !=
+                                                                0
+                                                            ? Text(snapshot
+                                                                    .data[index]
+                                                                ['qty'])
                                                             : Text(""),
                                                     // int.parse(count[index]) <
                                                     //         int.parse(
@@ -611,7 +653,8 @@ class _MyCartPageState extends State<MyCartPage> {
                                         ],
                                       ),
                                       onPressed: () {
-                                        checker(snapshot.data[index]['product_id']);
+                                        checker(
+                                            snapshot.data[index]['product_id']);
                                         // removeProduct(productIds[index]);
                                       },
                                     ),

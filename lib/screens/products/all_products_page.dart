@@ -1,6 +1,8 @@
 import 'package:distributer_application/base/color_properties.dart';
 import 'package:distributer_application/base/custom_loader.dart';
+import 'package:distributer_application/home/home_page.dart';
 import 'package:distributer_application/screens/products/product_description_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -556,165 +558,185 @@ import 'package:distributer_application/screens/basic/baseUrl.dart';
 class AllProductsPage extends StatefulWidget {
   static const int PAGE_SIZE = 4;
   final String categoryId, categoryName;
+  final Function refresh;
+  final int cartItemCount;
+
   AllProductsPage(
-      {Key key, @required this.categoryId, @required this.categoryName})
+      {Key key, @required this.categoryId, @required this.categoryName, this.refresh, this.cartItemCount})
       : super(key: key);
+
   @override
   _AllProductsPageState createState() =>
-      _AllProductsPageState(categoryId, categoryName);
+      _AllProductsPageState(categoryId, categoryName, refresh, cartItemCount);
 }
 
 class _AllProductsPageState extends State<AllProductsPage> {
   final String categoryId, categoryName;
-  _AllProductsPageState(this.categoryId, this.categoryName);
+  final Function refresh;
+  final int cartItemCount;
+
+  _AllProductsPageState(this.categoryId, this.categoryName, this.refresh, this.cartItemCount);
+
+  moveToHomePage(){
+    refresh();
+    Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: appColor,
-        elevation: 2.0,
-        centerTitle: true,
-        title: Text(
-          categoryName,
-          maxLines: 1,
-          overflow: TextOverflow.fade,
-          softWrap: false,
-          style: TextStyle(
-            color: white,
+    return WillPopScope(
+      onWillPop: (){
+        return moveToHomePage();
+      },
+        child: Scaffold(
+          appBar: AppBar(
+            backgroundColor: appColor,
+            elevation: 2.0,
+            centerTitle: true,
+            title: Text(
+              categoryName,
+              maxLines: 1,
+              overflow: TextOverflow.fade,
+              softWrap: false,
+              style: TextStyle(
+                color: white,
+              ),
+            ),
+            iconTheme: IconThemeData(
+              color: white,
+            ),
+            leading: GestureDetector(
+              onTap: (){
+                moveToHomePage();
+              },
+              child: Icon(Icons.arrow_back),
+            ),
           ),
-        ),
-        iconTheme: IconThemeData(
-          color: white,
-        ),
-      ),
-      body: SafeArea(
-        child: OrientationBuilder(
-          builder: (context, orientation) {
-            return PagewiseGridView.count(
-              pageSize: AllProductsPage.PAGE_SIZE,
-              crossAxisCount: orientation == Orientation.portrait ? 2 : 4,
-              // mainAxisSpacing: 1.0,
-              // crossAxisSpacing: 1.0,
-              childAspectRatio: 0.65,
-              padding: EdgeInsets.all(15.0),
-              itemBuilder: this._itemBuilder,
-              pageFuture: (pageIndex) => BackendService.getImages(
-                  pageIndex * AllProductsPage.PAGE_SIZE,
-                  AllProductsPage.PAGE_SIZE,
-                  categoryId),
-              loadingBuilder: (context) {
-                return Center(
-                  child: CustomLoader(),
-                );
+          body: SafeArea(
+            child: OrientationBuilder(
+              builder: (context, orientation) {
+                return PagewiseGridView.count(
+                    pageSize: AllProductsPage.PAGE_SIZE,
+                    crossAxisCount: orientation == Orientation.portrait ? 2 : 4,
+                    // mainAxisSpacing: 1.0,
+                    // crossAxisSpacing: 1.0,
+                    childAspectRatio: 0.65,
+                    padding: EdgeInsets.all(15.0),
+                    itemBuilder: this._itemBuilder,
+                    pageFuture: (pageIndex) => BackendService.getImages(
+                        pageIndex * AllProductsPage.PAGE_SIZE,
+                        AllProductsPage.PAGE_SIZE,
+                        categoryId),
+                    loadingBuilder: (context) {
+                      return Center(
+                        child: CustomLoader(),
+                      );
+                    },
+                    noItemsFoundBuilder: (context) {
+                      return Center(
+                        child: Text("Sorry, no products to show."),
+                      );
+                    },
+                    retryBuilder: (context, callback) {
+                      return RaisedButton(
+                          child: Text('Retry'), onPressed: () => callback());
+                    });
               },
-              noItemsFoundBuilder: (context) {
-                return Center(
-                  child: Text("Sorry, no products to show."),
-                );
-              },
-                retryBuilder: (context, callback) {
-                  return RaisedButton(
-                      child: Text('Retry'),
-                      onPressed: () => callback()
-                  );
-                }
-            );
-          },
-        ),
-      ),
-    );
+            ),
+          ),
+        ),);
   }
 
   Widget _itemBuilder(context, ProductModel entry, index) {
     return Card(
-        child: InkWell(
-      onTap: () {
-        print("tapped" + entry.id);
-        print(entry.images);
-        Navigator.of(context).push(
-          MaterialPageRoute(
+      child: InkWell(
+        onTap: () {
+          print("tapped" + entry.id);
+          print(entry.images);
+          Navigator.of(context)
+              .push(
+            MaterialPageRoute(
               builder: (_) => ProductDescriptionPage(
-                    productId: entry.id,
-                    productName: entry.productName,
-                    productSeries: entry.productSeries,
-                    productQty: entry.productQty,
-                    categoryName: entry.categoryName,
-                    categorySeries: entry.categorySeries,
-                    weight: entry.weight,
-                    images: entry.images,
-                  )),
-        );
-      },
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            color: Colors.transparent,
-            height: 175.0,
-            width: MediaQuery.of(context).size.width,
-            child: GridTile(
-              child: ClipRRect(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(4.0),
-                  topRight: Radius.circular(4.0),
-                ),
-                child: Image.network(
-                  entry.img,
-                  fit: BoxFit.cover,
-                ),
-                // Text("R"),
+                productId: entry.id,
+                productName: entry.productName,
+                productSeries: entry.productSeries,
+                productQty: entry.productQty,
+                categoryName: entry.categoryName,
+                categorySeries: entry.categorySeries,
+                weight: entry.weight,
+                images: entry.images,
+                  cartItemCount: cartItemCount,
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(
-              left: 8.0,
-              right: 8.0,
-            ),
-            child: Divider(
-              color: appColor,
-              // height: 20,
-              thickness: 1,
-            ),
-          ),
-          Center(
-            child: Padding(
-              padding:
-                  const EdgeInsets.only(bottom: 8.0, right: 8.0, left: 8.0),
-              child: Column(
-                children: [
-                  Text(
-                    entry.productName,
-                    maxLines: 1,
-                    overflow: TextOverflow.fade,
-                    softWrap: false,
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12.0,
+          )
+              .then((value) {
+            setState(() {});
+          });
+        },
+        child: SizedBox(
+          height: 175.0,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: GridTile(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(4.0),
+                      topRight: Radius.circular(4.0),
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(2.0),
-                  ),
-                  Text(
-                    entry.categoryName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    softWrap: false,
-                    style: TextStyle(
-                      color: grey,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12.0,
+                    child: Image.network(
+                      entry.img,
+                      fit: BoxFit.cover,
                     ),
+                    // Text("R"),
                   ),
-                ],
+                ),
               ),
-            ),
+              Center(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.only(bottom: 8.0, right: 8.0, left: 8.0),
+                  child: Column(
+                    children: [
+                      Divider(
+                        color: appColor,
+                        thickness: 1,
+                      ),
+                      Text(
+                        entry.productName,
+                        maxLines: 1,
+                        overflow: TextOverflow.fade,
+                        softWrap: false,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.0,
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(2.0),
+                      ),
+                      Text(
+                        entry.categoryName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: false,
+                        style: TextStyle(
+                          color: grey,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-    ));
+    );
   }
 }
 

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:distributer_application/auth/basicInfo_page.dart';
 import 'package:distributer_application/home/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:form_field_validator/form_field_validator.dart';
@@ -81,19 +82,16 @@ class _RegisterPageState extends State<RegisterPage> {
         if (responseData["success"] == 'false') {
           return showErrDialog(context, "Error");
         } else {
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setBool("isLoggedIn", true);
-          prefs.setString("email", email);
-          prefs.setString("name", responseData['name']);
-          prefs.setStringList("cartProducts", cartProducts);
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => HomePage(
+                builder: (context) => BasicInfoPage(
                   email: email,
                   name: responseData['name'],
                 ),
-              )).then((_) => formkey.currentState.reset());
+              )).then(
+            (_) => formkey.currentState.reset(),
+          );
         }
       } else {
         throw Exception("Error, ${response.statusCode}");
@@ -388,26 +386,17 @@ class _RegisterPageState extends State<RegisterPage> {
                                         return showErrDialog(
                                             context, responseData['msg']);
                                       } else {
-                                        SharedPreferences prefs =
-                                            await SharedPreferences
-                                                .getInstance();
-                                        prefs.setBool("isLoggedIn", true);
-                                        prefs.setString("uid", user.uid);
-                                        prefs.setString("email", user.email);
-                                        prefs.setString(
-                                            "name", user.displayName);
-                                        prefs.setStringList("cartProducts", cartProducts);
-
-                                        Navigator.of(context)
-                                            .pushReplacement(MaterialPageRoute(
-                                                builder: (context) => HomePage(
-                                                      email: user.email,
-                                                      name: user.displayName,
-                                                    )))
-                                            .then(
-                                              (_) =>
-                                                  formkey.currentState.reset(),
-                                            );
+                                        Navigator.pushReplacement(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      BasicInfoPage(
+                                                    email: user.email,
+                                                    name: user.displayName,
+                                                  ),
+                                                ))
+                                            .then((_) =>
+                                                formkey.currentState.reset());
                                       }
                                     } else {
                                       throw Exception(
