@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:distributer_application/auth/basicInfo_page.dart';
+import 'package:distributer_application/auth/referralCode_page.dart';
 import 'package:distributer_application/home/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:form_field_validator/form_field_validator.dart';
@@ -85,7 +86,7 @@ class _RegisterPageState extends State<RegisterPage> {
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => BasicInfoPage(
+                builder: (context) => ReferralCodePage(
                   email: email,
                   name: responseData['name'],
                 ),
@@ -134,9 +135,12 @@ class _RegisterPageState extends State<RegisterPage> {
         Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-                image: NetworkImage(
-                    "https://image.freepik.com/free-vector/blogger-put-post-message-blog-man-work-with-text-content-management-man-holdings-text-programmer-worker_273625-66.jpg"),
-                // "https://image.freepik.com/free-vector/cute-astronaut-ice-cream-cone-cartoon-vector-icon-illustration-science-food-icon-concept-isolated-vector-flat-cartoon-styl_138676-2507.jpg"),
+                image: AssetImage(
+                  'assets/lrimg.jpg',
+                ),
+                // NetworkImage(
+                //     "https://image.freepik.com/free-vector/blogger-put-post-message-blog-man-work-with-text-content-management-man-holdings-text-programmer-worker_273625-66.jpg"),
+                // // "https://image.freepik.com/free-vector/cute-astronaut-ice-cream-cone-cartoon-vector-icon-illustration-science-food-icon-concept-isolated-vector-flat-cartoon-styl_138676-2507.jpg"),
                 fit: BoxFit.cover),
           ),
         ),
@@ -390,7 +394,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                                 context,
                                                 MaterialPageRoute(
                                                   builder: (context) =>
-                                                      BasicInfoPage(
+                                                      ReferralCodePage(
                                                     email: user.email,
                                                     name: user.displayName,
                                                   ),

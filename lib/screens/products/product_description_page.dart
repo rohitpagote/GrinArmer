@@ -46,7 +46,7 @@ class ProductDescriptionPage extends StatefulWidget {
         categorySeries,
         weight,
         images,
-      cartItemCount,
+        cartItemCount,
       );
 }
 
@@ -72,10 +72,27 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
     this.categorySeries,
     this.weight,
     this.images,
-      this.cartItemCount,
+    this.cartItemCount,
   );
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  Widget disableAddToCartBtn = FloatingActionButton.extended(
+    onPressed: () {},
+    elevation: 4.0,
+    tooltip: 'Product Unavailable',
+    icon: Icon(
+      Icons.remove_shopping_cart_outlined,
+      color: white,
+    ),
+    label: Text(
+      "PRODUCT UNAVAILABLE",
+      style: TextStyle(
+        color: white,
+      ),
+    ),
+    backgroundColor: grey,
+  );
 
   // Add to Cart operations
   //add products into the cart => initial/new
@@ -182,37 +199,45 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
       backgroundColor: appColor,
     ));
 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String email = prefs.getString('email');
-    var cic = prefs.getInt('cartItemCount');
-
-    print(email);
-    print(productId.toString());
-    print(count.toString());
-
-    http.Response response = await http
-        .post('https://betasources.in/projects/grin-armer/add-to-cart', body: {
-      'username': email,
-      'product_id': productId.toString(),
-      'qty': count.toString(),
-    });
-
-    print(response.body);
-    var responseBody = jsonDecode(response.body);
-    if (responseBody['success'] == true) {
-      if(responseBody['msg'] == 'Item added to cart.'){
-        cic++;
-        prefs.setInt('cartItemCount', cic);
-        setState(() {
-          cartItemCount = cic;
-          count = count;
-        });
-      }
+    print(count);
+    print(productQty);
+    if (count > int.parse(productQty)) {
       _scaffoldKey.currentState.hideCurrentSnackBar();
-      showSuccessDialog(context, responseBody['msg']);
+      showErrDialog(context, 'Product limit exceeded.');
     } else {
-      _scaffoldKey.currentState.hideCurrentSnackBar();
-      showErrDialog(context, responseBody['msg']);
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String email = prefs.getString('email');
+      var cic = prefs.getInt('cartItemCount');
+
+      print(email);
+      print(productId.toString());
+      print(count.toString());
+
+      http.Response response = await http.post(
+          'https://betasources.in/projects/grin-armer/add-to-cart',
+          body: {
+            'username': email,
+            'product_id': productId.toString(),
+            'qty': count.toString(),
+          });
+
+      print(response.body);
+      var responseBody = jsonDecode(response.body);
+      if (responseBody['success'] == true) {
+        if (responseBody['msg'] == 'Item added to cart.') {
+          cic++;
+          prefs.setInt('cartItemCount', cic);
+          setState(() {
+            cartItemCount = cic;
+            count = count;
+          });
+        }
+        _scaffoldKey.currentState.hideCurrentSnackBar();
+        showSuccessDialog(context, responseBody['msg']);
+      } else {
+        _scaffoldKey.currentState.hideCurrentSnackBar();
+        showErrDialog(context, responseBody['msg']);
+      }
     }
   }
 
@@ -260,7 +285,10 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
   //add function
   void add() {
     setState(() {
-      if (count < int.parse(productQty)) count++;
+      if (count < int.parse(productQty)) {
+        count++;
+        controller.text = count.toString();
+      }
     });
 //    bool existsInCart = false;
 //    cartProducts != [] ??
@@ -291,7 +319,10 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
   //minus function
   void minus() {
     setState(() {
-      if (count != 1) count--;
+      if (count != 1 && count < int.parse(productQty)) {
+        count--;
+        controller.text = count.toString();
+      }
     });
   }
 
@@ -305,6 +336,7 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
     });
   }
 
+  TextEditingController controller;
   @override
   void initState() {
     // TODO: implement initState
@@ -312,6 +344,14 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
     count = 1;
 //    getSPData();
     getCartItemCount();
+    controller = TextEditingController();
+    controller.text = count.toString();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   final headingStyle = TextStyle(
@@ -352,8 +392,7 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
           // Icon(Icons.notifications_on_outlined),
           GestureDetector(
             child: Padding(
-              padding:
-              EdgeInsets.symmetric(horizontal: 16, vertical: 12.0),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12.0),
               child: Badge(
                 badgeContent: Text(
                   cartItemCount.toString(),
@@ -372,10 +411,10 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => MyCartPage(),
-                  )).then((value){
-                    setState(() {
-                      getCartItemCount();
-                    });
+                  )).then((value) {
+                setState(() {
+                  getCartItemCount();
+                });
               });
             },
           ),
@@ -616,6 +655,38 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
                                 color: Color(0xFFf5f6f7),
                               ),
                             ),
+                            // Container(
+                            //   child: TextFormField(
+                            //     keyboardType: TextInputType.number,
+                            //     // initialValue: '$count',
+                            //     style: TextStyle(
+                            //       fontSize: 16,
+                            //       height: 1.0,
+                            //     ),
+                            //     decoration: InputDecoration(
+                            //       enabledBorder: OutlineInputBorder(
+                            //         borderRadius: BorderRadius.circular(4),
+                            //         borderSide: BorderSide(
+                            //           color: black,
+                            //           width: 2,
+                            //         ),
+                            //       ),
+                            //       focusedBorder: OutlineInputBorder(
+                            //         borderRadius: BorderRadius.circular(4),
+                            //         borderSide: BorderSide(
+                            //           color: appColor,
+                            //           width: 2,
+                            //         ),
+                            //       ),
+                            //     ),
+                            //     // validator: emailValidator,
+                            //     onChanged: (val) {
+                            //       count = int.parse(val);
+                            //       print(count);
+                            //     },
+                            //     controller: controller,
+                            //   ),
+                            // ),
                             Container(
                               padding: EdgeInsets.all(10.0),
                               child: Center(
@@ -644,20 +715,55 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
                                       mini: true,
                                     ),
                                     Container(
-                                      width: count > 99 ? 75.0 : 50.0,
-                                      decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: Colors.grey[700],
-                                          ),
-                                          borderRadius: BorderRadius.all(
-                                            Radius.circular(50.0),
-                                          )),
+                                      width: 85.0,
+                                      // height: 60.0,
+                                      // width: count > 99 ? 75.0 : 50.0,
+                                      // decoration: BoxDecoration(
+                                      //     border: Border.all(
+                                      //       color: Colors.grey[700],
+                                      //     ),
+                                      //     borderRadius: BorderRadius.all(
+                                      //       Radius.circular(50.0),
+                                      //     )),
                                       child: Center(
                                         child: Padding(
                                           padding: EdgeInsets.all(10.0),
-                                          child: Text('$count',
-                                              style: new TextStyle(
-                                                  fontSize: 20.0)),
+                                          child:
+                                              // Text(count.toString(),
+                                              //     style: new TextStyle(
+                                              //         fontSize: 20.0)),
+                                              TextField(
+                                            keyboardType: TextInputType.number,
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              // height: 0.4,
+                                            ),
+
+                                            decoration: InputDecoration(
+                                              enabledBorder: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(100),
+                                                borderSide: BorderSide(
+                                                  color: black,
+                                                  width: 2,
+                                                ),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(100),
+                                                borderSide: BorderSide(
+                                                  color: appColor,
+                                                  width: 2,
+                                                ),
+                                              ),
+                                            ),
+                                            // validator: emailValidator,
+                                            onChanged: (val) {
+                                              count = int.parse(val);
+                                              print(count);
+                                            },
+                                            controller: controller,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -718,26 +824,31 @@ class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // addProductId(productId, count);
-          // removeProduct(productId);
-          // updateProduct(productId, count);
-          doProductManagement(productId, count);
-        },
-        elevation: 4.0,
-        tooltip: 'Add to cart',
-        icon: Icon(
-          Icons.add_shopping_cart_outlined,
-          color: white,
-        ),
-        label: Text(
-          "ADD TO CART",
-          style: TextStyle(
+      floatingActionButton: Visibility(
+        visible: int.parse(productQty) == 0 ? false : true,
+        replacement: disableAddToCartBtn,
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            // addProductId(productId, count);
+            // removeProduct(productId);
+            // updateProduct(productId, count);
+            doProductManagement(productId, count);
+          },
+          elevation: 4.0,
+          tooltip: 'Add to cart',
+          disabledElevation: 0.0,
+          icon: Icon(
+            Icons.add_shopping_cart_outlined,
             color: white,
           ),
+          label: Text(
+            "ADD TO CART",
+            style: TextStyle(
+              color: white,
+            ),
+          ),
+          backgroundColor: appColor,
         ),
-        backgroundColor: appColor,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(

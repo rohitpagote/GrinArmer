@@ -180,9 +180,12 @@ class _ResetPasswordState extends State<ResetPassword> {
         Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-                image: NetworkImage(
-                    "https://image.freepik.com/free-vector/blogger-put-post-message-blog-man-work-with-text-content-management-man-holdings-text-programmer-worker_273625-66.jpg"),
-                // "https://image.freepik.com/free-vector/cute-astronaut-ice-cream-cone-cartoon-vector-icon-illustration-science-food-icon-concept-isolated-vector-flat-cartoon-styl_138676-2507.jpg"),
+                image: AssetImage(
+                  'assets/lrimg.jpg',
+                ),
+                // NetworkImage(
+                //     "https://image.freepik.com/free-vector/blogger-put-post-message-blog-man-work-with-text-content-management-man-holdings-text-programmer-worker_273625-66.jpg"),
+                // // "https://image.freepik.com/free-vector/cute-astronaut-ice-cream-cone-cartoon-vector-icon-illustration-science-food-icon-concept-isolated-vector-flat-cartoon-styl_138676-2507.jpg"),
                 fit: BoxFit.cover),
           ),
         ),

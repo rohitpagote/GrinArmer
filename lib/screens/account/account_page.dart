@@ -416,6 +416,46 @@ class _AccountPageState extends State<AccountPage> {
                                 ),
                               ),
                               Padding(padding: EdgeInsets.only(bottom: 25.0)),
+                              //referral code
+                              Container(
+                                padding: EdgeInsets.only(left: 20, right: 20),
+                                child: TextFormField(
+                                  readOnly: true,
+                                  initialValue: snapshot.data[1]['referral'].toString(),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    height: 1.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  decoration: InputDecoration(
+                                    labelText: "Referral Code",
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                      borderSide: BorderSide(
+                                        color: appColor,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                      borderSide: BorderSide(
+                                        color: grey,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    prefixIcon: Padding(
+                                      child: IconTheme(
+                                        data:
+                                            IconThemeData(color: Colors.black),
+                                        child: Icon(Icons.qr_code_scanner_outlined),
+                                      ),
+                                      padding:
+                                          EdgeInsets.only(left: 20, right: 10),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Padding(padding: EdgeInsets.only(bottom: 25.0)),
                               Container(
                                 padding: EdgeInsets.only(left: 20, right: 20),
                                 child: TextFormField(
@@ -890,7 +930,7 @@ class _AccountPageState extends State<AccountPage> {
                                       ["addressLine1"],
                                   keyboardType: TextInputType.streetAddress,
                                   autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
+                                      AutovalidateMode.onUserInteraction,
                                   style: TextStyle(
                                     fontSize: 16,
                                     height: 1.0,
@@ -1083,8 +1123,7 @@ class _AccountPageState extends State<AccountPage> {
                                     _scaffoldKey.currentState
                                         .showSnackBar(SnackBar(
                                       duration: Duration(seconds: 1),
-                                      content: Text(
-                                          'Shop Name is required.'),
+                                      content: Text('Shop Name is required.'),
                                       behavior: SnackBarBehavior.floating,
                                       elevation: 3.0,
                                       backgroundColor: Colors.redAccent,
@@ -1096,8 +1135,7 @@ class _AccountPageState extends State<AccountPage> {
                                     _scaffoldKey.currentState
                                         .showSnackBar(SnackBar(
                                       duration: Duration(seconds: 1),
-                                      content: Text(
-                                          'Country is required.'),
+                                      content: Text('Country is required.'),
                                       behavior: SnackBarBehavior.floating,
                                       elevation: 3.0,
                                       backgroundColor: Colors.redAccent,
@@ -1109,8 +1147,7 @@ class _AccountPageState extends State<AccountPage> {
                                     _scaffoldKey.currentState
                                         .showSnackBar(SnackBar(
                                       duration: Duration(seconds: 1),
-                                      content: Text(
-                                          'State is required.'),
+                                      content: Text('State is required.'),
                                       behavior: SnackBarBehavior.floating,
                                       elevation: 3.0,
                                       backgroundColor: Colors.redAccent,
@@ -1122,8 +1159,7 @@ class _AccountPageState extends State<AccountPage> {
                                     _scaffoldKey.currentState
                                         .showSnackBar(SnackBar(
                                       duration: Duration(seconds: 1),
-                                      content: Text(
-                                          'City is required.'),
+                                      content: Text('City is required.'),
                                       behavior: SnackBarBehavior.floating,
                                       elevation: 3.0,
                                       backgroundColor: Colors.redAccent,
@@ -1135,8 +1171,8 @@ class _AccountPageState extends State<AccountPage> {
                                     _scaffoldKey.currentState
                                         .showSnackBar(SnackBar(
                                       duration: Duration(seconds: 1),
-                                      content: Text(
-                                          'Address Line 1 is required.'),
+                                      content:
+                                          Text('Address Line 1 is required.'),
                                       behavior: SnackBarBehavior.floating,
                                       elevation: 3.0,
                                       backgroundColor: Colors.redAccent,

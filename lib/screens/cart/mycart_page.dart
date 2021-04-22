@@ -153,11 +153,14 @@ class _MyCartPageState extends State<MyCartPage> {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String email = prefs.getString("email");
+    String role = prefs.getString("role");
+    print(role);
 
     http.Response response = await http.post(
         'https://betasources.in/projects/grin-armer/cart-for-enquiry',
         body: {
           'username': email,
+          'role': role,
         });
 
     print(response.body);

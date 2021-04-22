@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:distributer_application/auth/showErrDialog.dart';
 import 'package:distributer_application/base/color_properties.dart';
 import 'package:distributer_application/base/custom_loader.dart';
 import 'package:distributer_application/base/zoomingImg.dart';
@@ -29,6 +30,25 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     return jsonDecode(response.body);
   }
 
+  sendDelieveryConfirmation(cartId) async {
+    http.Response response = await http.post(
+        'https://betasources.in/projects/grin-armer/delivery-status',
+        body: {
+          'id': cartId,
+        });
+
+    print(cartId);
+    print(response.statusCode);
+    print(response.body);
+    var responseBody = jsonDecode(response.body);
+    if (responseBody['success'] == true) {
+      showSuccessDialog(context, responseBody['msg']);
+      setState(() {});
+    } else {
+      showErrDialog(context, responseBody['msg']);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -55,15 +75,36 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                 Container(
                   height: 50.0,
                   width: MediaQuery.of(context).size.width,
-                  child: Row(
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        'Total Orders : ' + snapshot.data.length.toString(),
-                        style: TextStyle(
-                          color: appColor,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Total Orders : ' + snapshot.data.length.toString(),
+                            style: TextStyle(
+                              color: appColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 4,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Please press YES if the order is delivered',
+                            style: TextStyle(
+                              color: appColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 8.0,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -73,9 +114,12 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                 ),
                 snapshot.data.length == 0
                     ? Expanded(
-                        child: Center(
-                          child: Text(
-                              'Sorry, you haven\'t purchased our any product till now.'),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Center(
+                            child: Text(
+                                'Sorry, you haven\'t purchased our any product till now.'),
+                          ),
                         ),
                       )
                     : Expanded(
@@ -92,54 +136,114 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                                 ),
                                 Container(
                                   padding: EdgeInsets.all(12.0),
-                                  height: 50.0,
+                                  // height: 50.0,
                                   width: MediaQuery.of(context).size.width,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Text.rich(
-                                        TextSpan(
-                                          children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text.rich(
                                             TextSpan(
-                                                text: 'Order Date : ',
-                                                style:
-                                                    TextStyle(color: appColor)),
-                                            TextSpan(
-                                              text: snapshot.data[index1]
-                                                  ['order_date'],
-                                              style: TextStyle(
-                                                color: appColor,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 12.0,
-                                              ),
+                                              children: [
+                                                TextSpan(
+                                                    text: 'Order Date : ',
+                                                    style: TextStyle(
+                                                        color: appColor)),
+                                                TextSpan(
+                                                  text: snapshot.data[index1]
+                                                      ['order_date'],
+                                                  style: TextStyle(
+                                                    color: appColor,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 12.0,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                          ],
-                                        ),
-                                      ),
-                                      Text.rich(
-                                        TextSpan(
-                                          children: [
+                                          ),
+                                          Text.rich(
                                             TextSpan(
-                                                text: 'Status : ',
-                                                style:
-                                                    TextStyle(color: appColor)),
-                                            TextSpan(
-                                              text: snapshot.data[index1]
-                                                  ['status'],
-                                              style: TextStyle(
-                                                color: snapshot.data[index1]
-                                                            ['status'] ==
-                                                        'Pending'
-                                                    ? Colors.red
-                                                    : Colors.blue,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 12.0,
-                                              ),
+                                              children: [
+                                                TextSpan(
+                                                    text: 'Status : ',
+                                                    style: TextStyle(
+                                                        color: appColor)),
+                                                TextSpan(
+                                                  text: snapshot.data[index1]
+                                                      ['status'],
+                                                  style: TextStyle(
+                                                    color: snapshot.data[index1]
+                                                                ['status'] ==
+                                                            'Pending'
+                                                        ? Colors.red
+                                                        : Colors.blue,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 12.0,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
+                                      snapshot.data[index1]['confirm'] == '1' &&
+                                              snapshot.data[index1]
+                                                      ['delivery'] ==
+                                                  '0'
+                                          ? Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text.rich(
+                                                  TextSpan(
+                                                    children: [
+                                                      TextSpan(
+                                                          text:
+                                                              'Is your order delivered? ',
+                                                          style: TextStyle(
+                                                              color: appColor)),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    // FlatButton(
+                                                    //   child: Text(
+                                                    //     'YES',
+                                                    //     style: TextStyle(
+                                                    //       color: Colors.blue,
+                                                    //     ),
+                                                    //   ),
+                                                    //   onPressed: () {},
+                                                    // ),
+                                                    OutlineButton(
+                                                      child: Text(
+                                                        'YES',
+                                                        style: TextStyle(
+                                                          color: Colors.blue,
+                                                        ),
+                                                      ),
+                                                      onPressed: () {
+                                                        sendDelieveryConfirmation(
+                                                            snapshot.data[
+                                                                index1]['id']);
+                                                      },
+                                                      borderSide: BorderSide(
+                                                          color: Colors.blue),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            )
+                                          : SizedBox(
+                                              height: 0,
+                                            ),
                                     ],
                                   ),
                                 ),
@@ -232,24 +336,56 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                                                         padding:
                                                             EdgeInsets.all(2.0),
                                                       ),
-                                                      Text(
-                                                        "Weight : " +
-                                                            snapshot.data[
-                                                                        index1]
-                                                                    ['products']
-                                                                [
-                                                                index2]['weight'],
-                                                        maxLines: 1,
-                                                        overflow:
-                                                            TextOverflow.fade,
-                                                        softWrap: false,
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 12.0,
-                                                        ),
-                                                      ),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceEvenly,
+                                                        children: [
+                                                          Text(
+                                                            "Wt : " +
+                                                                snapshot.data[index1]
+                                                                            [
+                                                                            'products']
+                                                                        [index2]
+                                                                    ['weight'],
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .fade,
+                                                            softWrap: false,
+                                                            style: TextStyle(
+                                                              color:
+                                                                  Colors.black,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 12.0,
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            "Qty : " +
+                                                                snapshot.data[
+                                                                            index1]
+                                                                        [
+                                                                        'products']
+                                                                    [
+                                                                    index2]['qty'],
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .fade,
+                                                            softWrap: false,
+                                                            style: TextStyle(
+                                                              color:
+                                                                  Colors.black,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 12.0,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      )
                                                     ],
                                                   ),
                                                 ),

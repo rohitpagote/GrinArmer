@@ -83,6 +83,8 @@ class _LoginPageState extends State<LoginPage> {
             prefs.setBool("isLoggedIn", true);
             prefs.setString("email", email);
             prefs.setString("name", responseData['name']);
+            prefs.setString("referral", responseData['referral']);
+            prefs.setString("role", responseData['role']);
             List c = prefs.getStringList("cartProducts");
             print('cartProducts');
             print(c);
@@ -206,6 +208,8 @@ class _LoginPageState extends State<LoginPage> {
                       prefs.setString("uid", user.uid);
                       prefs.setString("email", user.email);
                       prefs.setString("name", user.displayName);
+                      prefs.setString("referral", responseData['referral']);
+                      prefs.setString("role", responseData['role']);
                       List c = prefs.getStringList("cartProducts");
                       print('cartProducts');
                       print(c);
@@ -288,9 +292,12 @@ class _LoginPageState extends State<LoginPage> {
         Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-                image: NetworkImage(
-                    "https://image.freepik.com/free-vector/blogger-put-post-message-blog-man-work-with-text-content-management-man-holdings-text-programmer-worker_273625-66.jpg"),
-                // "https://image.freepik.com/free-vector/mountain-ridges-vector-illustration-sunrise_105738-948.jpg"),
+                image: AssetImage(
+                  'assets/lrimg.jpg',
+                ),
+                // NetworkImage(
+                //     "https://image.freepik.com/free-vector/blogger-put-post-message-blog-man-work-with-text-content-management-man-holdings-text-programmer-worker_273625-66.jpg"),
+                // // "https://image.freepik.com/free-vector/mountain-ridges-vector-illustration-sunrise_105738-948.jpg"),
                 fit: BoxFit.cover),
           ),
         ),
@@ -442,7 +449,7 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                             Padding(padding: EdgeInsets.only(bottom: 12.0)),
-                            forgotPassword,
+                            // forgotPassword,
                             Padding(padding: EdgeInsets.only(bottom: 12.0)),
                             form,
                             Padding(padding: EdgeInsets.only(bottom: 36.0)),

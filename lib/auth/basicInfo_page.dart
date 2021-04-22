@@ -50,7 +50,8 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
       city,
       addressLine1,
       addressLine2,
-      pincode;
+      pincode,
+      referralCode;
 
   String deviceName;
   String deviceVersion;
@@ -113,15 +114,19 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
 //    addressLine1 = responseData['addressLine1'];
 //    addressLine2 = responseData['addressLine2'];
 //    pincode = responseData['pincode'];
-    phoneNo = responseData['phone'];
-    gst = responseData['gst'];
-    shopName = responseData['shopName'];
-    country = responseData['country'];
-    state = responseData['state'];
-    city = responseData['city'];
-    addressLine1 = responseData['addressLine1'];
-    addressLine2 = responseData['addressLine2'];
-    pincode = responseData['pincode'];
+    phoneNo = responseData['phone'] == null ? '' : responseData['phone'];
+    gst = responseData['gst'] == null ? '' : responseData['gst'];
+    shopName = responseData['shopName'] == null ? '' : responseData['shopName'];
+    country = responseData['country'] == null ? '' : responseData['country'];
+    state = responseData['state'] == null ? '' : responseData['state'];
+    city = responseData['city'] == null ? '' : responseData['city'];
+    addressLine1 = responseData['addressLine1'] == null
+        ? ''
+        : responseData['addressLine1'];
+    addressLine2 = responseData['addressLine2'] == null
+        ? ''
+        : responseData['addressLine2'];
+    pincode = responseData['pincode'] == null ? '' : responseData['pincode'];
     return jsonDecode(response.body);
   }
 
@@ -238,9 +243,15 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
 //          showSuccessDialog(context, responseData['msg']);
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setBool("isLoggedIn", true);
+          print('Hello there');
+          print(responseData);
+          print(responseData['referral']);
+          print(responseData['role']);
           prefs.setString("email", email);
           prefs.setString("name", responseData['name']);
           prefs.setStringList("cartProducts", []);
+          prefs.setString("referral", responseData['referral']);
+          prefs.setString("role", responseData['role']);
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -429,6 +440,50 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                         data:
                                             IconThemeData(color: Colors.black),
                                         child: Icon(Icons.email_outlined),
+                                      ),
+                                      padding:
+                                          EdgeInsets.only(left: 20, right: 10),
+                                    )),
+                                // onChanged: (val) {
+                                //   email = val;
+                                // },
+                              ),
+                            ),
+                            Padding(padding: EdgeInsets.only(bottom: 25.0)),
+                            //referral code
+                            Container(
+                              padding: EdgeInsets.only(left: 20, right: 20),
+                              child: TextFormField(
+                                readOnly: true,
+                                initialValue:
+                                    snapshot.data[2]['referral'].toString(),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  height: 1.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                decoration: InputDecoration(
+                                    labelText: "Referral Code",
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                      borderSide: BorderSide(
+                                        color: appColor,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                      borderSide: BorderSide(
+                                        color: grey,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    prefixIcon: Padding(
+                                      child: IconTheme(
+                                        data:
+                                            IconThemeData(color: Colors.black),
+                                        child: Icon(
+                                            Icons.qr_code_scanner_outlined),
                                       ),
                                       padding:
                                           EdgeInsets.only(left: 20, right: 10),
